@@ -35,11 +35,14 @@ def api():
         if spaces_left > max_spaces:
             spaces_left = max_spaces
 
+        percent_full = round(((max_spaces - spaces_left) / max_spaces) * 100, 2)
+
         garage_data['garages'].append({
             'name': name,
-            'spaces_left': spaces_left,
             'max_spaces': max_spaces,
-            'percent_full': round(((max_spaces - spaces_left) / max_spaces) * 100, 2)
+            'spaces_left': spaces_left,
+            'spaces_filled': max_spaces - spaces_left,
+            'percent_full': percent_full,
         })
 
     return jsonify(garage_data)
