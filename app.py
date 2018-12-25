@@ -45,7 +45,10 @@ def api():
             'percent_full': percent_full,
         })
 
-    return jsonify(garage_data)
+    response = jsonify(garage_data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 
 @app.errorhandler(404)
