@@ -6,11 +6,13 @@ How exactly is it 2-in-1 you ask? Well, making a request to the `/api` route ret
 # How does it work?
 Heroku scheduler is a Heroku addon that can run a command at set intervals. Every hour, Heroku runs the `curl` command to the `/add` route (which requires a key) which scrapes UCF's parking site, extracts the garage info, and saves it to a PostgreSQL database. The `/add` route requires a key to prevent a regular user from making a request and adding data outside of that hourly interval. The table looks something like this (the values aren't exact):
 
-Date                       |id |garage_data                                             |month |day
----------------------------|---|--------------------------------------------------------|------|----
-2019-01-02T22:00:49.044984 |10  |{"garages": [{"name": "Garage A", "max_spaces": 1623...]|1     |2
-2019-01-02T23:01:23.357748 |11  |{"garages": [{"name": "Garage A", "max_spaces": 1623...]|1     |2
-2019-01-02T00:00:45.357748 |12  |{"garages": [{"name": "Garage A", "max_spaces": 1623...]|1     |3
+Date                       |id |garage_data                                               |month |day
+---------------------------|---|---------------------------------------------------------- |------|----
+2019-01-02T22:00:49.044984 |10  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1     |2
+2019-01-02T23:01:23.357748 |11  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1     |2
+2019-01-02T00:00:45.357748 |12  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1     |3
+2019-01-02T01:00:16.357748 |13  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1     |3
+
 
 ### Sidenote
 `config.py` contains 2 import things: The url of the PostgreSQL database and the key need to acces the `/add` route. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent access the the `/add` route). Once you've done that, create a `config.py` file that looks like this:
