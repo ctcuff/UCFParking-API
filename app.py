@@ -1,6 +1,6 @@
 import json
 from requests import get
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from bs4 import BeautifulSoup
 from datetime import datetime
 from sqlalchemy import and_
@@ -20,9 +20,7 @@ db.init_app(app)
 
 @app.route('/')
 def index():
-    # Query the DB for today's date
-    today = datetime.now()
-    return get_data_at_day(today.month, today.day)
+    return render_template('index.html')
 
 
 @app.route('/api')
@@ -84,6 +82,12 @@ def add():
         return jsonify({'result': f'Failed to add data: {str(e)}'})
 
     return jsonify({'result': 'Successfully added data'})
+
+
+@app.route('/data/today')
+def get_data_for_today():
+    today = datetime.now()
+    return get_data_at_day(today.month, today.day)
 
 
 @app.route('/data/all')
