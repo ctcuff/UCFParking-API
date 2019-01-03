@@ -1,14 +1,28 @@
+import json
 from requests import get
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from bs4 import BeautifulSoup
+from datetime import datetime
+from sqlalchemy import and_
+from flask_cors import CORS
+from config import DATABASE_URL, KEY
+from models import *
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Allows requests from other languages
+CORS(app)
+db.init_app(app)
 
 
 @app.route('/')
 def index():
-    return api()
+    # Query the DB for today's date
+    today = datetime.now()
+    return get_data_at_day(today.month, today.day)
 
 
 @app.route('/api')
@@ -44,16 +58,86 @@ def api():
             'spaces_filled': max_spaces - spaces_left,
             'percent_full': percent_full,
         })
+    return jsonify(garage_data)
 
-    response = jsonify(garage_data)
-    response.headers.add('Access-Control-Allow-Origin', '*')
 
-    return response
+@app.route('/add')
+def add():
+    header_key = request.headers.get('key')
+    # Make sure normal users can add data to the database
+    if header_key != KEY:
+        return jsonify({'result': 'Error: missing or invalid key'})
+
+    garage_data = get('https://ucf-garages.herokuapp.com/api')
+    date = datetime.now()
+    garage = Garage(
+        date=str(date.isoformat()),
+        garage_data=json.loads(garage_data.text),
+        month=date.month,
+        day=date.day
+    )
+
+    try:
+        db.session.add(garage)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({'result': f'Failed to add data: {str(e)}'})
+
+    return jsonify({'result': 'Successfully added data'})
+
+
+@app.route('/data/all')
+def get_data():
+    return query_data(
+        Garage.query
+            .order_by(Garage.id.asc())
+            .all()
+    )
+
+
+@app.route('/data/month/<int:month>')
+def get_data_at_month(month):
+    return query_data(
+        Garage.query
+            .filter_by(month=month)
+            .order_by(Garage.id.asc())
+            .all()
+    )
+
+
+@app.route('/data/month/<int:month>/day/<int:day>')
+def get_data_at_day(month, day):
+    return query_data(
+        Garage.query
+            .filter(and_(Garage.month == month, Garage.day == day))
+            .order_by(Garage.id.asc())
+            .all()
+    )
 
 
 @app.errorhandler(404)
 def error404(err):
     return jsonify({'error': 'Page not found'})
+
+
+@app.errorhandler(500)
+def error500(err):
+    return jsonify({'error': 'Internal server error'})
+
+
+def query_data(query):
+    data = {
+        'data': [
+            {
+                'id': garage.id,
+                'date': garage.date,
+                'month': garage.month,
+                'day': garage.day,
+                'garage_data': garage.garage_data
+            } for garage in query
+        ]
+    }
+    return jsonify(data)
 
 
 if __name__ == '__main__':
