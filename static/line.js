@@ -34,8 +34,8 @@ function initLineChart(url = '/data/today') {
         },
         {
           fill: window.fill,
-          borderColor: 'rgba(75, 192, 192, 0.8)',
-          backgroundColor: 'rgba(75, 192, 192, 0.8)',
+          borderColor: 'rgba(40, 167, 69, 0.8)',
+          backgroundColor: 'rgba(40, 167, 69, 0.8)',
           label: 'D',
           data: [],
           hidden: window.hideAllLines
@@ -43,7 +43,7 @@ function initLineChart(url = '/data/today') {
         {
           fill: window.fill,
           borderColor: 'rgba(54, 162, 235, 0.8)',
-          backgroundColor: 'rgba(54, 162, 235, 0.8)',
+          backgroundColor: 'rgba(0, 0, 255, 0.8)',
           label: 'H',
           data: [],
           hidden: window.hideAllLines
@@ -58,8 +58,8 @@ function initLineChart(url = '/data/today') {
         },
         {
           fill: window.fill,
-          borderColor: 'rgba(201, 203, 207, 0.8)',
-          backgroundColor: 'rgba(201, 203, 207, 0.8)',
+          borderColor: 'rgba(52, 58, 64, 0.8)',
+          backgroundColor: 'rgba(52, 58, 64, 0.8)',
           label: 'Libra',
           data: [],
           hidden: window.hideAllLines
@@ -79,9 +79,16 @@ function initLineChart(url = '/data/today') {
         callbacks: {
           label: (tooltipItem, tooltipData) => {
             // Formats the tooltip text to be 'A - 56% Full'
-            let { datasetIndex, index } = tooltipItem;
-            let { label, data } = tooltipData.datasets[datasetIndex];
+            const { datasetIndex, index } = tooltipItem;
+            const { label, data } = tooltipData.datasets[datasetIndex];
             return `${label} - ${data[index]}% Full`;
+          },
+          title: (tooltipItem) => {
+            // Formats the date from 1/2/2019 - 7AM to Wed Jan 2 - 7 AM
+            const { xLabel } = tooltipItem[0];
+            const labelParts = xLabel.split(' ');
+            const date = new Date(labelParts[0]);
+            return `${date.toString().slice(0, 10)} - ${labelParts[2]} ${labelParts[3]}`;
           }
         }
       },
@@ -122,13 +129,13 @@ function initLineChart(url = '/data/today') {
 
   function loadGarageData() {
     $loadingOverlay.css({ display: 'block' });
-    console.log(`Got url of ${url}`);
+
     $.get(url, resp => {
       if (resp.data.length === 0) {
         $('#overlay-no-data').css({ display: 'block' });
         return;
       }
-      console.log('Continuing...');
+
       resp.data.forEach(data => {
         let time = new Date(data.date);
         // Format the date from 2019-01-02T13:01:15.330713 to 1/2/2019 - 1 PM
