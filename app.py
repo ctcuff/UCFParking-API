@@ -72,7 +72,8 @@ def add():
         date=str(date.isoformat()),
         garage_data=json.loads(garage_data.text),
         month=date.month,
-        day=date.day
+        day=date.day,
+        week=int(datetime.now().strftime('%U'))
     )
 
     try:
@@ -84,19 +85,19 @@ def add():
     return jsonify({'result': 'Successfully added data'})
 
 
-@app.route('/data/today')
-def get_data_for_today():
-    today = datetime.now()
-    return get_data_at_day(today.month, today.day)
-
-
 @app.route('/data/all')
-def get_data():
+def get_all_data():
     return query_data(
         Garage.query
             .order_by(Garage.id.asc())
             .all()
     )
+
+
+@app.route('/data/today')
+def get_data_for_today():
+    today = datetime.now()
+    return get_data_at_day(today.month, today.day)
 
 
 @app.route('/data/month/<int:month>')
@@ -137,7 +138,8 @@ def query_data(query):
                 'date': garage.date,
                 'month': garage.month,
                 'day': garage.day,
-                'garage_data': garage.garage_data
+                'garage_data': garage.garage_data,
+                'week': garage.week
             } for garage in query
         ]
     }

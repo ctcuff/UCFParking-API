@@ -10,3 +10,4 @@ class Garage(db.Model):
     garage_data = db.Column(db.JSON, nullable=False)
     month = db.Column(db.Integer, nullable=False)
     day = db.Column(db.Integer, nullable=False)
+    week = db.Column(db.Integer, nullable=False)
