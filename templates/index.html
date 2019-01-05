@@ -30,7 +30,8 @@
           </li>
         </ul>
         <form class="form-inline">
-          <input class="form-control form-control-sm mr-sm-2" data-provide="datepicker" id="date-picker" type="search"
+          <input readonly class="form-control form-control-sm mr-sm-2" data-provide="datepicker" id="date-picker"
+                 type="search"
                  placeholder=""
                  aria-label="Search">
           <button class="btn btn-dark my-2 my-sm-0" id="btn-submit" type="submit" disabled>Search</button>
@@ -39,21 +40,18 @@
     </nav>
 
     <div class="overlay" id="overlay-no-data" onclick="hideOverlay()">
-      <div class="text">
+      <div class="overlay-center">
         <h1>No data found</h1>
       </div>
-      <div class="text">
+      <div class="overlay-center">
         <br><br>
         <span id="overlay-info">Click anywhere to continue</span>
       </div>
     </div>
 
     <div class="overlay" id="overlay-loading" style="display: block">
-      <div class="progress-bar-container">
-        <div class="progress">
-          <div class="progress-bar-animated progress-bar-striped bg-info" role="progressbar"
-               aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">Loading...</div>
-        </div>
+      <div class="overlay-center">
+        <div class="loader"></div>
       </div>
     </div>
 
@@ -79,7 +77,7 @@
   <script src="/static/nav-controller.js"></script>
   <script>
     function hideOverlay() {
-      $('#overlay-no-data').css({ display: 'none' });
+      $('#overlay-no-data').css({ display: 'none' })
     }
   </script>
 </html>

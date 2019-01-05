@@ -2,30 +2,40 @@
   width: 95%;
 }
 
-.progress-bar-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60%;
+.loader {
+  border: 8px solid white;
+  border-radius: 50%;
+  border-top: 8px solid #212529;
+  width: 80px;
+  height: 80px;
+  -webkit-animation: spin 2s linear infinite; /* For Safari */
+  animation: spin 2s linear infinite;
 }
 
-.progress-bar-container > div {
-  height: 20px;
+/* For Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 
-.progress-bar-container > div > div {
-  width: 100%;
-  text-align: center;
-  font-size: 14px;
-  color: white;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .bg-info {
   background-color: #212529 !important;
 }
 
-.text {
+.overlay-center {
   position: absolute;
   top: 50%;
   left: 50%;
