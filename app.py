@@ -18,6 +18,10 @@ CORS(app)
 db.init_app(app)
 
 
+def jsonify_error(msg):
+    return jsonify({'error': msg})
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -28,7 +32,7 @@ def api():
     page = get('http://secure.parking.ucf.edu/GarageCount/')
 
     if page.status_code != 200:
-        return jsonify({'error': page.text})
+        return jsonify_error(page.text)
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -64,7 +68,7 @@ def add():
     header_key = request.headers.get('key')
     # Make sure normal users can add data to the database
     if header_key != KEY:
-        return jsonify({'result': 'Error: missing or invalid key'})
+        return jsonify_error('Missing or invalid key')
 
     garage_data = get('https://ucf-garages.herokuapp.com/api')
     date = datetime.now()
@@ -80,9 +84,9 @@ def add():
         db.session.add(garage)
         db.session.commit()
     except Exception as e:
-        return jsonify({'result': f'Failed to add data: {str(e)}'})
+        return jsonify_error(f'Failed to add data: {str(e)}')
 
-    return jsonify({'result': 'Successfully added data'})
+    return jsonify({'response': 'Successfully added data'})
 
 
 @app.route('/data/all')
@@ -98,6 +102,23 @@ def get_all_data():
 def get_data_for_today():
     today = datetime.now()
     return get_data_at_day(today.month, today.day)
+
+
+@app.route('/data/week')
+def get_current_week():
+    return get_data_at_week(int(datetime.now().strftime('%U')))
+
+
+@app.route('/data/week/<int:week>')
+def get_data_at_week(week):
+    if 0 > week > 52 or week is not int:
+        return jsonify_error('Week is out of range. Valid range is 0..52 (integers only)')
+    return query_data(
+        Garage.query
+            .filter_by(week=week)
+            .order_by(Garage.id.asc())
+            .all()
+    )
 
 
 @app.route('/data/month/<int:month>')
@@ -122,12 +143,12 @@ def get_data_at_day(month, day):
 
 @app.errorhandler(404)
 def error404(err):
-    return jsonify({'error': 'Page not found'})
+    return jsonify_error('Page not found')
 
 
 @app.errorhandler(500)
 def error500(err):
-    return jsonify({'error': 'Internal server error'})
+    return jsonify_error('Internal server error')
 
 
 def query_data(query):
