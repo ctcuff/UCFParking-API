@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Garage Data</title>
+    <title>UCF Parking Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css">
@@ -11,7 +11,7 @@
   <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href="#">Garage Data</a>
+      <span class="navbar-brand">Garage Data</span>
       <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarColor01"
               aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -20,22 +20,31 @@
       <div class="navbar-collapse collapse" id="navbarColor01" style="">
         <ul class="navbar-nav mr-auto" id="nav-list-items">
           <li class="nav-item active" id="nav-today">
-            <a class="nav-link" href="#">Today <span class="sr-only">(current)</span></a>
+            <span class="nav-link">Today <span class="sr-only">(current)</span></span>
+          </li>
+          <li class="nav-item" id="nav-current-week">
+            <span class="nav-link">This week</span>
           </li>
           <li class="nav-item" id="nav-current-month">
-            <a class="nav-link" href="#">This month</a>
+            <span class="nav-link">This month</span>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" id="nav-all">All</a>
+            <span class="nav-link" id="nav-all">All</span>
           </li>
         </ul>
-        <form class="form-inline">
-          <input readonly class="form-control form-control-sm mr-sm-2" data-provide="datepicker" id="date-picker"
-                 type="search"
-                 placeholder=""
-                 aria-label="Search">
-          <button class="btn btn-dark my-2 my-sm-0" id="btn-submit" type="submit" disabled>Search</button>
-        </form>
+        <div class="form-inline">
+          <div class="input-group input-group-sm mb-3r">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="addon-wrapping">Date</span>
+            </div>
+            <input type="search" class="form-control" id="date-picker" placeholder="" aria-label="Username"
+                   data-provide="datepicker"
+                   aria-describedby="addon-wrapping" readonly>
+            <div class="input-group-append">
+              <button class="btn btn-light" id="btn-submit" type="button">Search</button>
+            </div>
+          </div>
+        </div>
       </div>
     </nav>
 
