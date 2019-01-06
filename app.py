@@ -1,4 +1,5 @@
 import json
+import traceback
 from requests import get
 from flask import Flask, jsonify, request, render_template
 from bs4 import BeautifulSoup
@@ -7,6 +8,7 @@ from sqlalchemy import and_
 from flask_cors import CORS
 from config import DATABASE_URL, KEY
 from models import *
+from email_helper import send_email
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -29,9 +31,11 @@ def index():
 
 @app.route('/api')
 def api():
-    page = get('http://secure.parking.ucf.edu/GarageCount/')
+    url = 'http://secure.parking.ucf.edu/GarageCount/'
+    page = get(url)
 
     if page.status_code != 200:
+        send_email(f"An error occurred in api(): Couldn't parse HTML (is {url} down?):\n\n{page.text}")
         return jsonify_error(page.text)
 
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -84,6 +88,7 @@ def add():
         db.session.add(garage)
         db.session.commit()
     except Exception as e:
+        send_email(f'An error occurred in add(): {traceback.format_exc()}')
         return jsonify_error(f'Failed to add data: {str(e)}')
 
     return jsonify({'response': 'Successfully added data'})
@@ -111,8 +116,6 @@ def get_current_week():
 
 @app.route('/data/week/<int:week>')
 def get_data_at_week(week):
-    if 0 > week > 52 or week is not int:
-        return jsonify_error('Week is out of range. Valid range is 0..52 (integers only)')
     return query_data(
         Garage.query
             .filter_by(week=week)
@@ -148,6 +151,7 @@ def error404(err):
 
 @app.errorhandler(500)
 def error500(err):
+    send_email(f'An internal server error occurred:\n\n{traceback.format_exc()}')
     return jsonify_error('Internal server error')
 
 
