@@ -64,6 +64,13 @@ def api():
             'spaces_filled': max_spaces - spaces_left,
             'percent_full': percent_full,
         })
+
+    if len(garage_data['garages']) == 0:
+        send_email(
+            f'No garage data was found. '
+            f'Check {url} to see if the website has changed or is no longer running'
+        )
+
     return jsonify(garage_data)
 
 
@@ -118,9 +125,20 @@ def get_current_week():
 def get_data_at_week(week):
     return query_data(
         Garage.query
-            .filter_by(week=week)
-            .order_by(Garage.id.asc())
-            .all()
+        .filter_by(week=week)
+        .order_by(Garage.id.asc())
+        .all()
+    )
+
+
+@app.route('/data/month')
+def get_current_month():
+    month = datetime.now().month
+    return query_data(
+        Garage.query
+        .filter_by(month=month)
+        .order_by(Garage.id.asc())
+        .all()
     )
 
 
@@ -128,9 +146,9 @@ def get_data_at_week(week):
 def get_data_at_month(month):
     return query_data(
         Garage.query
-            .filter_by(month=month)
-            .order_by(Garage.id.asc())
-            .all()
+        .filter_by(month=month)
+        .order_by(Garage.id.asc())
+        .all()
     )
 
 
@@ -138,9 +156,9 @@ def get_data_at_month(month):
 def get_data_at_day(month, day):
     return query_data(
         Garage.query
-            .filter(and_(Garage.month == month, Garage.day == day))
-            .order_by(Garage.id.asc())
-            .all()
+        .filter(and_(Garage.month == month, Garage.day == day))
+        .order_by(Garage.id.asc())
+        .all()
     )
 
 
