@@ -15,12 +15,14 @@ Date                       |id |garage_data                                     
 
 
 ### Sidenote
-`config.py` contains a few import things: The url of the PostgreSQL database and the key needed to acces the `/add` route and a few credentials used by `email_helper.py`. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). You'll also need an email address, port, and host of whatever email service you use (I'd highly recommend using gmail since this project already uses it). Once you've done that, create a `config.py` file that looks something like like this:
+`config.py` contains a few import things: The url of the PostgreSQL database, the key needed to acces the `/add` route and a few credentials used by `email_helper.py`. `email_helper.py` contains a helper function used by `app.py` that sends an email to `TO` if something goes wrong. This is useful because you don't have to check the app everyday to make sure it's running. Although, if you don't want this feature, just remove the `send_email()` function from `app.py`. The email contains an error log and stacktrace. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). You'll also need an email address, port, and host of whatever email service you use (I'd highly recommend using gmail since this project already uses it). Once you've done that, create a `config.py` file that looks something like like this:
 ```python
 DATABASE_URL = 'postgres://some-awesome-url-here'
 # This will be some random key you'll generate.
 # Don't use this specific value. I'd recommend using uuid4() from the uuid lib.
 KEY = 'c52452a7-4f68-4033-a40b-31ec188e5c30'
+FROM = 'from.someone@gmail.com'
+TO = 'to.someone@gmail.com'
 # This isn't the password for the actuall email address, it's a password for an app
 # See: https://support.google.com/accounts/answer/185833?hl=en
 PASSWORD = '16-digit-app-password-here'
