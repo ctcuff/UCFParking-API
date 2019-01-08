@@ -42,7 +42,7 @@ function initLineChart(url = '/data/today') {
         },
         {
           fill: window.fill,
-          borderColor: 'rgba(54, 162, 235, 0.8)',
+          borderColor: 'rgba(0, 0, 255, 0.8)',
           backgroundColor: 'rgba(0, 0, 255, 0.8)',
           label: 'H',
           data: [],
@@ -153,5 +153,10 @@ function initLineChart(url = '/data/today') {
   }
 
   loadGarageData();
+
+  // Makes sure the chart gets completely reset
+  if (window.chart !== undefined)
+    window.chart.destroy();
+
   window.chart = lineChart;
 }

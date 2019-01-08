@@ -1,106 +1,112 @@
 (function () {
   const $navToday = $('#nav-today');
-  const $navWeek = $('#nav-current-week');
   const $navMonth = $('#nav-current-month');
   const $navAll = $('#nav-all');
   const $inputDate = $('#date-picker');
-  const $btnSubmit = $('#btn-submit');
-  const today = new Date();
+  const $dropdownTitleWeek = $('#span-week');
+  const $dropdownTitleMonth = $('#span-month');
+  const $dropDownItemsWeek = $('#nav-dropdown-items-week');
+  const $dropDownItemsMonth = $('#nav-dropdown-items-month');
+  const $navItems = $('#nav-list-items');
+  const today = moment();
+  const months = [
+    'January', 'February', 'March', 'April',
+    'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'
+  ];
   const API_TODAY = '/data/today';
   const API_WEEK = '/data/week';
-  const API_CURRENT_MONTH = `/data/month/${today.getMonth() + 1}`;
+  const API_MONTH = `/data/month`;
   const API_ALL = '/data/all';
 
-  $navToday.click(function () {
-    // Don't reload the chart if this nav section
-    // is already active
-    if ($(this).hasClass('active'))
-      return;
+  // Get the current week of the year. Moment starts a 1 but
+  // the database is indexed at 0.
+  const numWeeks = Number.parseInt(today.format('w')) - 1;
 
-    $(this).addClass('active');
-    $navMonth.removeClass('active');
-    $navAll.removeClass('active');
-    $navWeek.removeClass('active');
-
-    window.chart.destroy();
-    // Makes sure the date picker's value resets to the current
-    // day when it's not selected
-    $inputDate.attr({ placeholder: today.toLocaleDateString() });
-    initLineChart(API_TODAY);
-  });
-
-  $navWeek.click(function () {
-    if ($(this).hasClass('active'))
-      return;
-
-    $(this).addClass('active');
-    $navToday.removeClass('active');
-    $navMonth.removeClass('active');
-    $navAll.removeClass('active');
-
-    window.chart.destroy();
-    $inputDate.attr({ placeholder: today.toLocaleDateString() });
+  $('#view-current-week').click(function () {
+    setActive($(this).closest('li'));
+    $dropdownTitleWeek.text('This week');
     initLineChart(API_WEEK);
   });
 
+  // Add weeks 1 to the current week to the nav drop down
+  for (let i = 0; i <= numWeeks; i++) {
+    const $child = $(`<span class="dropdown-item" id="week-${i + 1}">Week ${i + 1}</span>`);
+
+    $child.click(function () {
+      setActive($(this).closest('li'));
+      $dropdownTitleWeek.text(`Week ${i + 1}`);
+      initLineChart(`${API_WEEK}/${i}`);
+    });
+    $dropDownItemsWeek.append($child);
+  }
+
+  // Adds January to the current month to the nav drop down.
+  // moment().month() returns 0 for January but the database is
+  // indexed at zero so 1 is added
+  for (let i = 0; i < today.month() + 1; i++) {
+    const $child = $(`<span class="dropdown-item" id="month-${i + 1}">${months[i]}</span>`);
+
+    $child.click(function () {
+      setActive($(this).closest('li'));
+      $dropdownTitleMonth.text(months[i]);
+      initLineChart(`${API_MONTH}/${months[i]}`)
+    });
+    $dropDownItemsMonth.append($child);
+  }
+
+  $navToday.click(function () {
+    setActive(this);
+    initLineChart(API_TODAY);
+  });
+
   $navMonth.click(function () {
-    if ($(this).hasClass('active'))
-      return;
-
-    $(this).addClass('active');
-    $navAll.removeClass('active');
-    $navToday.removeClass('active');
-    $navWeek.removeClass('active');
-
-    window.chart.destroy();
-    $inputDate.attr({ placeholder: today.toLocaleDateString() });
-    initLineChart(API_CURRENT_MONTH);
+    setActive(this);
+    initLineChart(API_MONTH);
   });
 
   $navAll.click(function () {
-    if ($(this).hasClass('active'))
-      return;
-
-    $(this).addClass('active');
-    $navToday.removeClass('active');
-    $navMonth.removeClass('active');
-    $navWeek.removeClass('active');
-
-    window.chart.destroy();
-    $inputDate.attr({ placeholder: today.toLocaleDateString() });
+    setActive(this);
     initLineChart(API_ALL);
   });
 
-  $inputDate.attr({ placeholder: today.toLocaleDateString() });
+  $inputDate.click(function () { $(this).tooltip('hide') });
   $inputDate.datepicker({
     autoclose: true,
     todayHighlight: true,
     startDate: '1/2/2019',
-    endDate: today.toLocaleDateString()
-  });
+    endDate: today.format('M/D/YYYY')
+  }).on('changeDate', event => {
+        for (let child of $navItems.children())
+          $(child).removeClass('active');
 
-  $btnSubmit.click(function (event) {
-    // Don't let the page refresh
-    event.preventDefault();
-    $(this).blur();
-    // Prevent submitting an empty date search
-    if ($inputDate.datepicker('getDate') === null)
+        const date = moment(event.date);
+        const [month, day] = [date.month() + 1, date.date()];
+        initLineChart(`/data/month/${month}/day/${day}`);
+      }
+  );
+
+  $inputDate.datepicker('update', today.format('M/D/YYYY'));
+
+  // Sets the selected nav bar item as active and removes
+  // the active property from the rest of the nav bar items
+  function setActive(element) {
+    const $element = $(element);
+    // Don't reload the chart if this nav section
+    // is already active
+    if ($element.hasClass('active'))
       return;
 
-    const date = $inputDate.datepicker('getDate');
-    const [month, day] = [date.getMonth() + 1, date.getDate()];
-    const url = `/data/month/${month}/day/${day}`;
+    $element.addClass('active');
 
-    // Clear the input but set it's selected value as the placeholder
-    $inputDate.attr({ placeholder: $inputDate.val() });
-    $inputDate.datepicker('update', '');
-
-    $navToday.removeClass('active');
-    $navWeek.removeClass('active');
-    $navMonth.removeClass('active');
-    $navAll.removeClass('active');
-
-    window.chart.destroy();
-    initLineChart(url);
-  });
+    for (let child of $navItems.children()) {
+      const $child = $(child);
+      if ($child.attr('id') !== $element.attr('id')) {
+        $child.removeClass('active');
+      }
+    }
+    // Makes sure the date picker's value resets to the current
+    // day when it's not selected
+    $inputDate.datepicker('update', today.format('M/D/YYYY'));
+  }
 })();

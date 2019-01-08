@@ -22,14 +22,27 @@
           <li class="nav-item active" id="nav-today">
             <span class="nav-link">Today <span class="sr-only">(current)</span></span>
           </li>
-          <li class="nav-item" id="nav-current-week">
-            <span class="nav-link">This week</span>
+          <li class="nav-item dropdown" id="nav-dropdown-week">
+            <span class="nav-link dropdown-toggle" id="span-week" role="button" data-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+              View week
+            </span>
+            <div class="dropdown-menu" id="nav-dropdown-items-week" aria-labelledby="nav-dropdown-title">
+              <span class="dropdown-item" id="view-current-week">This week</span>
+              <div class="dropdown-divider"></div>
+            </div>
           </li>
-          <li class="nav-item" id="nav-current-month">
-            <span class="nav-link">This month</span>
+
+          <li class="nav-item dropdown" id="nav-dropdown-month">
+            <span class="nav-link dropdown-toggle" id="span-month" role="button" data-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+              View month
+            </span>
+            <div class="dropdown-menu" id="nav-dropdown-items-month" aria-labelledby="nav-dropdown-title">
+            </div>
           </li>
-          <li class="nav-item">
-            <span class="nav-link" id="nav-all">All</span>
+          <li class="nav-item" id="nav-all">
+            <span class="nav-link">All</span>
           </li>
         </ul>
         <div class="form-inline">
@@ -39,10 +52,10 @@
             </div>
             <input type="search" class="form-control" id="date-picker" placeholder="" aria-label="Username"
                    data-provide="datepicker"
+                   data-toggle="tooltip"
+                   data-placement="bottom"
+                   title="Click to change date"
                    aria-describedby="addon-wrapping" readonly>
-            <div class="input-group-append">
-              <button class="btn btn-light" id="btn-submit" type="button">Search</button>
-            </div>
           </div>
         </div>
       </div>
@@ -73,11 +86,13 @@
       <button class="btn btn-dark btn-sm shadow" id="showAll">Show all</button>
       <button class="btn btn-dark btn-sm shadow" id="toggle-smooth">Smooth</button>
       <button class="btn btn-dark btn-sm shadow" id="toggle-fill">Toggle fill</button>
+      <button class="btn btn-outline-dark btn-sm shadow" id="btn-view-source">View source</button>
     </div>
 
   </body>
-
+  <script src="https://momentjs.com/downloads/moment.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
@@ -85,9 +100,18 @@
   <script src="/static/chart-controller.js"></script>
   <script src="/static/nav-controller.js"></script>
   <script>
-    function hideOverlay() {
-      $('#overlay-no-data').css({ display: 'none' })
-    }
+    $(document).ready(() => {
+      // Enable all tooltips
+      $('[data-toggle="tooltip"]').tooltip();
+      $('#btn-view-source').click(() => {
+        let win = window.open('https://github.com/ctcuff/UCFParking-API', '_blank');
+        // Only open the page if the browser has allowed it
+        if (win !== null)
+          win.focus();
+      });
+    });
+
+    function hideOverlay() { $('#overlay-no-data').css({ display: 'none' }) }
   </script>
 </html>
 
