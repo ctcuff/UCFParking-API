@@ -1,3 +1,8 @@
+const API_TODAY = '/data/today';
+const API_WEEK = '/data/week';
+const API_MONTH = '/data/month';
+const API_ALL = '/data/all';
+
 (function () {
   const $navToday = $('#nav-today');
   const $navMonth = $('#nav-current-month');
@@ -14,10 +19,6 @@
     'May', 'June', 'July', 'August',
     'September', 'October', 'November', 'December'
   ];
-  const API_TODAY = '/data/today';
-  const API_WEEK = '/data/week';
-  const API_MONTH = `/data/month`;
-  const API_ALL = '/data/all';
 
   // Get the current week of the year. Moment starts a 1 but
   // the database is indexed at 0.
@@ -50,7 +51,7 @@
     $child.click(function () {
       setActive($(this).closest('li'));
       $dropdownTitleMonth.text(months[i]);
-      initLineChart(`${API_MONTH}/${months[i]}`)
+      initLineChart(`${API_MONTH}/${i + 1}`)
     });
     $dropDownItemsMonth.append($child);
   }

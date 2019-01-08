@@ -3,7 +3,7 @@ $(document).ready(() => {
 
   window.showToolTip = true;
   window.hideAllLines = true;
-  window.curved = true;
+  window.curved = false;
   window.fill = false;
 
   initLineChart();

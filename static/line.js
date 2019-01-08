@@ -1,7 +1,11 @@
 // The default behavior is to load the data for today
-function initLineChart(url = '/data/today') {
+function initLineChart(url = API_TODAY) {
   const canvas = document.getElementById('line-chart');
   const $loadingOverlay = $('#overlay-loading');
+
+  // Makes sure the chart gets completely reset
+  if (window.chart !== undefined)
+    window.chart.destroy();
 
   let lineChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
@@ -67,6 +71,8 @@ function initLineChart(url = '/data/today') {
       ]
     },
     options: {
+      animation: { duration: url === API_TODAY ? 1000 : 0 },
+      hover: { animationDuration: url === API_TODAY ? 1000 : 0 },
       title: {
         display: true,
         text: 'Garage Availability',
@@ -94,10 +100,17 @@ function initLineChart(url = '/data/today') {
       },
       legend: {
         position: 'bottom',
-        onClick: legendClickListener
+        onClick: legendClickListener,
       },
       elements: {
-        line: { tension: window.curved ? 0.4 : 0.000001 }
+        line: { tension: window.curved ? 0.4 : 0 },
+        point: {
+          // Disabling the radius when multiple points are showing
+          // improves load time and performance
+          radius: url === API_TODAY ? 3 : 0,
+          hitRadius: 10,
+          hoverRadius: 5,
+        }
       },
       scales: {
         yAxes: [{
@@ -110,11 +123,9 @@ function initLineChart(url = '/data/today') {
         }],
         xAxes: [{
           display: true,
-          scaleLabel: {
-            display: true,
-            labelString: 'Hour'
-          }
-        }]
+          gridLines: { display: false },
+          scaleLabel: { display: false, }
+        }],
       },
     }
   });
@@ -153,10 +164,6 @@ function initLineChart(url = '/data/today') {
   }
 
   loadGarageData();
-
-  // Makes sure the chart gets completely reset
-  if (window.chart !== undefined)
-    window.chart.destroy();
 
   window.chart = lineChart;
 }
