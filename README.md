@@ -15,26 +15,38 @@ Date                       |id |garage_data                                     
 
 
 ### Sidenote
-`config.py` contains 2 import things: The url of the PostgreSQL database and the key needed to acces the `/add` route. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). Once you've done that, create a `config.py` file that looks like this:
+`config.py` contains a few import things: The url of the PostgreSQL database and the key needed to acces the `/add` route and a few credentials used by `email_helper.py`. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). You'll also need an email address, port, and host of whatever email service you use (I'd highly recommend using gmail since this project already uses it). Once you've done that, create a `config.py` file that looks something like like this:
 ```python
 DATABASE_URL = 'postgres://some-awesome-url-here'
 # This will be some random key you'll generate.
 # Don't use this specific value. I'd recommend using uuid4() from the uuid lib.
 KEY = 'c52452a7-4f68-4033-a40b-31ec188e5c30'
+# This isn't the password for the actuall email address, it's a password for an app
+# See: https://support.google.com/accounts/answer/185833?hl=en
+PASSWORD = '16-digit-app-password-here'
+# This will be the host / port for the email service used. Again, I'd recommend using gmail
+HOST = 'smtp.gmail.com'
+PORT = 587
 ```
 ### Available routes
 * [`/api`](https://ucf-garages.herokuapp.com/api)
    * Returns JSON containing parking garage info (asumming UCF's parking website is still up...)
 * [`/data/all`](https://ucf-garages.herokuapp.com/data/all)
+  * Returns **ALL THE JSON AND WILL BE SLOW!!!**
 * [`/data/today`](https://ucf-garages.herokuapp.com/data/today)
+  * Returns data for the current date (starting at 12 AM)
 * [`/data/week`](https://ucf-garages.herokuapp.com/data/week)
    * Returns data for the current week
+   * Note that the first week starts at Jan, 2 since that was the day the sight first went up
+   * Every other week starts on Sunday
 * `/data/week/{week}`
    * For example: [`/data/week/1`](https://ucf-garages.herokuapp.com/data/week/1)
-   * The range for week is 0 - 52
+   * The range for `{week}` is 0 - 52
+* [`/data/month`](https://ucf-garages.herokuapp.com/data/month)
+  * Returns data for thecurrent month
 * `/data/month/{month}`
    * For example: [`/data/month/1`](https://ucf-garages.herokuapp.com/data/month/1)
-   * The range for month is 1 - 12
+   * The range for `{month}` is 1 - 12
 * `/data/month/{month}/day/{day}`
    * For example: [`/data/month/1/day/3`](https://ucf-garages.herokuapp.com/data/month/1/day/3)
 
