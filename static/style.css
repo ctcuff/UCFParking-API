@@ -1,5 +1,6 @@
 .outer {
   width: 95%;
+  margin: 0 auto;
 }
 
 .loader {
@@ -80,5 +81,9 @@
 
 #btn-view-source {
   float: right;
+}
+
+#overlay-loading {
+  display: block;
 }
 

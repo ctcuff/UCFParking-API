@@ -71,11 +71,15 @@ function initLineChart(url = API_TODAY) {
       ]
     },
     options: {
+      // Disable animations when loading a lot of data
+      // to prevent lag
       animation: { duration: url === API_TODAY ? 1000 : 0 },
       hover: { animationDuration: url === API_TODAY ? 1000 : 0 },
       title: {
         display: true,
         text: 'Garage Availability',
+        position: 'top',
+        padding: 16
       },
       tooltips: {
         position: 'average',
@@ -107,15 +111,24 @@ function initLineChart(url = API_TODAY) {
         point: {
           // Disabling the radius when multiple points are showing
           // improves load time and performance
-          radius: url === API_TODAY ? 3 : 0,
-          hitRadius: 10,
+          radius: url === API_TODAY || url.includes('day') ? 3 : 0,
+          hitRadius: 5,
           hoverRadius: 5,
         }
       },
       scales: {
         yAxes: [{
           display: true,
-          ticks: { min: 0, max: 100 },
+          ticks: {
+            min: 0,
+            max: 100.1,
+            // Work-around to make sure points at 100
+            // don't get cut off
+            callback: (value, index, values) => {
+                if (value !== 100.1)
+                  return values[index];
+              }
+          },
           scaleLabel: {
             display: true,
             labelString: 'Average percent full'
@@ -123,7 +136,7 @@ function initLineChart(url = API_TODAY) {
         }],
         xAxes: [{
           display: true,
-          gridLines: { display: false },
+          gridLines: { display: true },
           scaleLabel: { display: false, }
         }],
       },
@@ -133,8 +146,9 @@ function initLineChart(url = API_TODAY) {
   // The default legend click listener doesn't toggle the
   // clicked line's hidden state so it has to be done manually here
   function legendClickListener(event, legendItem) {
-    let hidden = lineChart.data.datasets[legendItem.datasetIndex].hidden;
-    lineChart.data.datasets[legendItem.datasetIndex].hidden = !hidden;
+    let index = legendItem.datasetIndex;
+    let hidden = lineChart.data.datasets[index].hidden;
+    lineChart.data.datasets[index].hidden = !hidden;
     lineChart.update();
   }
 
@@ -148,11 +162,9 @@ function initLineChart(url = API_TODAY) {
       }
 
       resp.data.forEach(data => {
-        let time = new Date(data.date);
+        let time = moment(data.date);
         // Format the date from 2019-01-02T13:01:15.330713 to 1/2/2019 - 1 PM
-        lineChart.data.labels.push(
-            time.toLocaleDateString() + ' - ' + time.toLocaleTimeString([], { hour: '2-digit' })
-        );
+        lineChart.data.labels.push(time.format('M/D/YYYY - h A'));
 
         data.garage_data.garages.forEach((garage, index) => {
           lineChart.data.datasets[index].data.push(Math.round(garage.percent_full));

@@ -44,7 +44,7 @@ const API_ALL = '/data/all';
 
   // Adds January to the current month to the nav drop down.
   // moment().month() returns 0 for January but the database is
-  // indexed at zero so 1 is added
+  // indexed at 1 so 1 is added
   for (let i = 0; i < today.month() + 1; i++) {
     const $child = $(`<span class="dropdown-item" id="month-${i + 1}">${months[i]}</span>`);
 
@@ -78,14 +78,15 @@ const API_ALL = '/data/all';
     startDate: '1/2/2019',
     endDate: today.format('M/D/YYYY')
   }).on('changeDate', event => {
-        for (let child of $navItems.children())
-          $(child).removeClass('active');
+    for (let child of $navItems.children())
+      $(child).removeClass('active');
 
-        const date = moment(event.date);
-        const [month, day] = [date.month() + 1, date.date()];
-        initLineChart(`/data/month/${month}/day/${day}`);
-      }
-  );
+    $('.navbar-collapse').collapse('hide');
+
+    const date = moment(event.date);
+    const [month, day] = [date.month() + 1, date.date()];
+    initLineChart(`/data/month/${month}/day/${day}`);
+  });
 
   $inputDate.datepicker('update', today.format('M/D/YYYY'));
 

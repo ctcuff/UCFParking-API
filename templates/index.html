@@ -53,7 +53,7 @@
             <input type="search" class="form-control" id="date-picker" placeholder="" aria-label="Username"
                    data-provide="datepicker"
                    data-toggle="tooltip"
-                   data-placement="bottom"
+                   data-placement="left"
                    title="Click to change date"
                    aria-describedby="addon-wrapping" readonly>
           </div>
@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    <div class="overlay" id="overlay-loading" style="display: block">
+    <div class="overlay" id="overlay-loading">
       <div class="overlay-center">
         <div class="loader"></div>
       </div>
@@ -86,7 +86,6 @@
       <button class="btn btn-dark btn-sm shadow" id="showAll">Show all</button>
       <button class="btn btn-dark btn-sm shadow" id="toggle-smooth">Smooth</button>
       <button class="btn btn-dark btn-sm shadow" id="toggle-fill">Toggle fill</button>
-      <button class="btn btn-outline-dark btn-sm shadow" id="btn-view-source">View source</button>
     </div>
 
   </body>
@@ -103,15 +102,11 @@
     $(document).ready(() => {
       // Enable all tooltips
       $('[data-toggle="tooltip"]').tooltip();
-      $('#btn-view-source').click(() => {
-        let win = window.open('https://github.com/ctcuff/UCFParking-API', '_blank');
-        // Only open the page if the browser has allowed it
-        if (win !== null)
-          win.focus();
-      });
+      $('.navbar-collapse span:not(.dropdown-toggle)').click(
+          () => $('.navbar-collapse').collapse('hide')
+      );
     });
 
     function hideOverlay() { $('#overlay-no-data').css({ display: 'none' }) }
   </script>
 </html>
-
