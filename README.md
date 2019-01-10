@@ -31,7 +31,7 @@ HOST = 'smtp.gmail.com'
 PORT = 587
 ```
 
-### Sidenot part 2 (the sequel)
+### Sidenote part 2 (the sequel)
 This code in this repo is actually 2 projects merged into one. The api is hosted on Heroku at https://ucf-garages.herokuapp.com/ while the website to view that data is hosted at https://ucfparking.herokuapp.com/.
 
 ### Available routes
