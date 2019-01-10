@@ -1,5 +1,5 @@
 # UCFParking-API
-This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to [this API](https://ucf-garages.herokuapp.com/api) and parsing the json.
+This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to https://ucf-garages.herokuapp.com/api and parsing the json.
 
 How exactly is this useful you ask? Well, making a request to the `/api` route returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/data/all` route returns a JSON response with info about how full each garage was from January to the current date (<b>BEWARE</b>, this will return a lot of JSON as each hour passes). The list is updated at the top of every hour every day. To view a specific date, make a request to `/data/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, [`https://ucf-garages.herokuapp.com/data/month/1/day/2`](https://ucf-garages.herokuapp.com/data/month/1/day/2) returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this: `{ "data": [] }`
 
@@ -30,6 +30,10 @@ PASSWORD = '16-digit-app-password-here'
 HOST = 'smtp.gmail.com'
 PORT = 587
 ```
+
+### Sidenot part 2 (the sequel)
+This code in this repo is actually 2 projects merged into one. The api is hosted on Heroku at https://ucf-garages.herokuapp.com/ while the website to view that data is hosted at https://ucfparking.herokuapp.com/.
+
 ### Available routes
 * [`/api`](https://ucf-garages.herokuapp.com/api)
    * Returns JSON containing parking garage info (asumming UCF's parking website is still up...)
