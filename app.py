@@ -1,7 +1,7 @@
 import json
 import traceback
 from requests import get
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request
 from bs4 import BeautifulSoup
 from datetime import datetime
 from sqlalchemy import and_
@@ -25,10 +25,6 @@ def jsonify_error(msg):
 
 
 @app.route('/')
-def index():
-    return render_template('index.html')
-
-
 @app.route('/api')
 def api():
     url = 'http://secure.parking.ucf.edu/GarageCount/'
@@ -125,9 +121,9 @@ def get_current_week():
 def get_data_at_week(week):
     return query_data(
         Garage.query
-        .filter_by(week=week)
-        .order_by(Garage.id.asc())
-        .all()
+            .filter_by(week=week)
+            .order_by(Garage.id.asc())
+            .all()
     )
 
 
@@ -136,9 +132,9 @@ def get_current_month():
     month = datetime.now().month
     return query_data(
         Garage.query
-        .filter_by(month=month)
-        .order_by(Garage.id.asc())
-        .all()
+            .filter_by(month=month)
+            .order_by(Garage.id.asc())
+            .all()
     )
 
 
@@ -146,9 +142,9 @@ def get_current_month():
 def get_data_at_month(month):
     return query_data(
         Garage.query
-        .filter_by(month=month)
-        .order_by(Garage.id.asc())
-        .all()
+            .filter_by(month=month)
+            .order_by(Garage.id.asc())
+            .all()
     )
 
 
@@ -156,9 +152,9 @@ def get_data_at_month(month):
 def get_data_at_day(month, day):
     return query_data(
         Garage.query
-        .filter(and_(Garage.month == month, Garage.day == day))
-        .order_by(Garage.id.asc())
-        .all()
+            .filter(and_(Garage.month == month, Garage.day == day))
+            .order_by(Garage.id.asc())
+            .all()
     )
 
 
@@ -181,7 +177,7 @@ def query_data(query):
                 'date': garage.date,
                 'month': garage.month,
                 'day': garage.day,
-                'garage_data': garage.garage_data,
+                'garages': garage.garage_data['garages'],
                 'week': garage.week
             } for garage in query
         ]
