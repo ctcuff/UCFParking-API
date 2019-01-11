@@ -97,7 +97,7 @@ function initLineChart(url = API_TODAY) {
             // Formats the date from 1/2/2019 - 7AM to Wed Jan 2 - 7 AM
             const { xLabel } = tooltipItem[0];
             const labelParts = xLabel.split(' ');
-            const date = new Date(labelParts[0]);
+            const date = new Date(`${labelParts[0]}/2019`);
             return `${date.toString().slice(0, 10)} - ${labelParts[2]} ${labelParts[3]}`;
           }
         }
@@ -164,9 +164,9 @@ function initLineChart(url = API_TODAY) {
       resp.data.forEach(data => {
         let time = moment(data.date);
         // Format the date from 2019-01-02T13:01:15.330713 to 1/2/2019 - 1 PM
-        lineChart.data.labels.push(time.format('M/D/YYYY - h A'));
+        lineChart.data.labels.push(time.format('M/D - h A'));
 
-        data.garage_data.garages.forEach((garage, index) => {
+        data.garages.forEach((garage, index) => {
           lineChart.data.datasets[index].data.push(Math.round(garage.percent_full));
         });
 

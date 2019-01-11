@@ -1,5 +1,4 @@
 $(document).ready(() => {
-  const $toggleCurveBtn = $('#toggle-smooth');
 
   window.showToolTip = true;
   window.hideAllLines = true;
@@ -7,15 +6,6 @@ $(document).ready(() => {
   window.fill = false;
 
   initLineChart();
-
-  $toggleCurveBtn.text(curved ? 'Straight' : 'Curved');
-
-  $toggleCurveBtn.click(function () {
-    window.curved = !window.curved;
-    window.chart.options.elements.line.tension = window.curved ? 0.4 : 0.000001;
-    window.chart.update();
-    $(this).text(window.curved ? 'Straight' : 'Curved');
-  });
 
   $('#toggle-tooltip').click(function () {
     window.showToolTip = !window.showToolTip;
