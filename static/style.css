@@ -68,6 +68,10 @@
   cursor: pointer;
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 #overlay-info {
   font-size: 16px;
   background-color: black;
@@ -79,11 +83,10 @@
   margin: 16px;
 }
 
-#btn-view-source {
+#view-source {
   float: right;
 }
 
 #overlay-loading {
   display: block;
 }
-

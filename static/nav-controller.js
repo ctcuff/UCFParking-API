@@ -1,9 +1,9 @@
-const API_TODAY = '/data/today';
-const API_WEEK = '/data/week';
-const API_MONTH = '/data/month';
-const API_ALL = '/data/all';
+const API_TODAY = 'https://ucf-garages.herokuapp.com/data/today';
+const API_WEEK = 'https://ucf-garages.herokuapp.com/data/week';
+const API_MONTH = 'https://ucf-garages.herokuapp.com/data/month';
+const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
-$(document).ready(() => {
+(function () {
   const $navToday = $('#nav-today');
   const $navMonth = $('#nav-current-month');
   const $navAll = $('#nav-all');
@@ -20,8 +20,8 @@ $(document).ready(() => {
     'September', 'October', 'November', 'December'
   ];
 
-// Get the current week of the year. Moment starts a 1 but
-// the database is indexed at 0.
+  // Get the current week of the year. Moment starts a 1 but
+  // the database is indexed at 0.
   const numWeeks = Number.parseInt(today.format('w')) - 1;
 
   $('#view-current-week').click(function () {
@@ -30,9 +30,9 @@ $(document).ready(() => {
     initLineChart(API_WEEK);
   });
 
-// Add weeks 1 to the current week to the nav drop down
+  // Add weeks 1 to the current week to the nav drop down
   for (let i = 0; i <= numWeeks; i++) {
-    const $child = $(`<span class="dropdown-item" id="week-${i + 1}">Week ${i + 1}</span>`);
+    const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}">Week ${i + 1}</span>`);
 
     $child.click(function () {
       setActive($(this).closest('li'));
@@ -42,11 +42,11 @@ $(document).ready(() => {
     $dropDownItemsWeek.append($child);
   }
 
-// Adds January to the current month to the nav drop down.
-// moment().month() returns 0 for January but the database is
-// indexed at 1 so 1 is added
+  // Adds January to the current month to the nav drop down.
+  // moment().month() returns 0 for January but the database is
+  // indexed at 1 so 1 is added
   for (let i = 0; i < today.month() + 1; i++) {
-    const $child = $(`<span class="dropdown-item" id="month-${i + 1}">${months[i]}</span>`);
+    const $child = $(`<span class="dropdown-item pointer" id="month-${i + 1}">${months[i]}</span>`);
 
     $child.click(function () {
       setActive($(this).closest('li'));
@@ -85,13 +85,13 @@ $(document).ready(() => {
 
     const date = moment(event.date);
     const [month, day] = [date.month() + 1, date.date()];
-    initLineChart(`/data/month/${month}/day/${day}`);
+    initLineChart(`${API_MONTH}/${month}/day/${day}`);
   });
 
   $inputDate.datepicker('update', today.format('M/D/YYYY'));
 
-// Sets the selected nav bar item as active and removes
-// the active property from the rest of the nav bar items
+  // Sets the selected nav bar item as active and removes
+  // the active property from the rest of the nav bar items
   function setActive(element) {
     const $element = $(element);
     // Don't reload the chart if this nav section
@@ -111,4 +111,4 @@ $(document).ready(() => {
     // day when it's not selected
     $inputDate.datepicker('update', today.format('M/D/YYYY'));
   }
-});
+})();

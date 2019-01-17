@@ -1,11 +1,18 @@
+let hiddenStatus = [];
+
 // The default behavior is to load the data for today
 function initLineChart(url = API_TODAY) {
   const canvas = document.getElementById('line-chart');
   const $loadingOverlay = $('#overlay-loading');
 
   // Makes sure the chart gets completely reset
-  if (window.chart !== undefined)
+  if (window.chart !== undefined) {
+    // Copy over which data sets where hidden
+    window.chart.data.datasets.forEach((data, index) => {
+      hiddenStatus[index] = data.hidden;
+    });
     window.chart.destroy();
+  }
 
   let lineChart = new Chart(canvas.getContext('2d'), {
     type: 'line',
@@ -163,7 +170,7 @@ function initLineChart(url = API_TODAY) {
 
       resp.data.forEach(data => {
         let time = moment(data.date);
-        // Format the date from 2019-01-02T13:01:15.330713 to 1/2/2019 - 1 PM
+        // Format the date from 2019-01-02T13:01:15.330713 to 1/2 - 1 PM
         lineChart.data.labels.push(time.format('M/D - h A'));
 
         data.garages.forEach((garage, index) => {
@@ -175,7 +182,15 @@ function initLineChart(url = API_TODAY) {
     }).then(() => $loadingOverlay.css({ display: 'none' }));
   }
 
+  function updateHidden() {
+    lineChart.data.datasets.forEach((data, index) => {
+      data.hidden = hiddenStatus[index];
+    });
+    lineChart.update();
+  }
+
   loadGarageData();
+  updateHidden();
 
   window.chart = lineChart;
 }
