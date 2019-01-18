@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="description" content="View an interactive graph of UCF parking garages. Data is added every hour 24 hours a day.">
+    <meta name="description"
+          content="View an interactive graph of UCF parking garages. Data is added every hour 24 hours a day.">
     <title>UCF Parking Data</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet"
@@ -84,6 +85,12 @@
       <canvas id="line-chart"></canvas>
     </div>
 
+    <div id="alert-container">
+      <div id="alt-close-alert" class="alert alert-dark fade show" data-dismiss="alert">
+        Press <code>F</code> to enter full screen
+      </div>
+    </div>
+
     <div id="btn-container">
       <button class="btn btn-dark btn-sm shadow" id="toggle-tooltip">Tooltip: on</button>
       <button class="btn btn-dark btn-sm shadow" id="showAll">Show all</button>
@@ -103,18 +110,49 @@
   <script src="/static/nav-controller.js"></script>
   <script>
     $(document).ready(() => {
+      const $alert = $('#alert-container > div');
+
       // Enable all tooltips
       $('[data-toggle="tooltip"]').tooltip();
       $('#view-source').click(() => {
-          let win = window.open('https://github.com/ctcuff/UCFParking-API', '_blank');
-          // The browser has allowed new windows to be opened
-          if (win !== null) {
-            win.focus();
-          }
+        let win = window.open('https://github.com/ctcuff/UCFParking-API', '_blank');
+        // The browser has allowed new windows to be opened
+        if (win !== null) {
+          win.focus();
+        }
       });
       $('.navbar-collapse span:not(.dropdown-toggle)').click(() => {
         $('.navbar-collapse').collapse('hide');
       });
+
+      $('#alert-container').click(() => {
+        $alert.alert('close');
+      });
+
+      // Enter full screen when F is pressed
+      $('body').keypress(e => {
+        if (e.which === 102) {
+          const el = document.body;
+
+          // Supports most browsers and their versions.
+          const requestMethod = el.requestFullScreen || el.webkitRequestFullScreen
+              || el.mozRequestFullScreen || el.msRequestFullScreen;
+
+          // Native full screen.
+          if (requestMethod) {
+            requestMethod.call(el);
+          }
+          // Older IE.
+          else if (typeof window.ActiveXObject !== "undefined") {
+            const wScript = new ActiveXObject("WScript.Shell");
+            if (wScript !== null) {
+              wScript.SendKeys("{F11}");
+            }
+          }
+        }
+      });
+
+      setTimeout(() => $alert.alert('close'), 3000);
     });
 
     function hideOverlay() {

@@ -1,3 +1,8 @@
+html {
+  /* Needed to ensure the body stays white when entering full screen */
+  background-color: white;
+}
+
 .outer {
   width: 95%;
   margin-left: 21px;
@@ -89,4 +94,27 @@
 
 #overlay-loading {
   display: block;
+}
+
+#alert-container {
+  position: fixed;
+  top: 60px;
+  width: 100%;
+}
+
+#alert-container > div {
+  margin: 0 auto;
+}
+
+.alert {
+  width: 30%;
+  text-align: center;
+}
+
+/* Hide the full screen alert on mobile devices */
+@media screen and (max-width: 600px) {
+  #alert-container {
+    visibility: hidden;
+    display: none;
+  }
 }
