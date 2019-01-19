@@ -14,6 +14,7 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
   const $dropDownItemsMonth = $('#nav-dropdown-items-month');
   const $navItems = $('#nav-list-items');
   const today = moment();
+  const firstDate = moment('2019-01-02T03:00:49.044984');
   const months = [
     'January', 'February', 'March', 'April',
     'May', 'June', 'July', 'August',
@@ -32,7 +33,15 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
   // Add weeks 1 to the current week to the nav drop down
   for (let i = 0; i <= numWeeks; i++) {
-    const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}">Week ${i + 1}</span>`);
+    let beginDate = firstDate.format('MMM DD');
+    // The first date has to be treated differently since it starts on Wednesday
+    let endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
+
+    const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}"></span>`);
+    $child.html(`Week ${i + 1} <small>${beginDate} - ${endDate}</small>`);
+
+    console.log(`begin date: ${beginDate}`);
+    console.log(`end date: ${endDate}`);
 
     $child.click(function () {
       setActive($(this).closest('li'));
@@ -40,6 +49,8 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
       initLineChart(`${API_WEEK}/${i}`);
     });
     $dropDownItemsWeek.append($child);
+
+    firstDate.add({ days: 1 });
   }
 
   // Adds January to the current month to the nav drop down.
