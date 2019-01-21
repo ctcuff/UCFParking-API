@@ -5,6 +5,7 @@
     <meta name="description"
           content="View an interactive graph of UCF parking garages. Data is added every hour 24 hours a day.">
     <title>UCF Parking Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css">
@@ -14,8 +15,15 @@
   </head>
   <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <span class="navbar-brand" style="cursor: default;">Garage Data</span>
+    <nav id="nav-bar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="fa fa-github" id="github-btn" href="https://github.com/ctcuff/UCFParking-API" target="_blank"
+         data-toggle="tooltip"
+         data-placement="bottom"
+         title="View project source"></a>
+      <a class="navbar-brand" href="https://github.com/ctcuff/UCFParking-API" target="_blank"
+         data-toggle="tooltip"
+         data-placement="bottom"
+         title="View project source">Garage Data</a>
       <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarColor01"
               aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -23,9 +31,11 @@
 
       <div class="navbar-collapse collapse" id="navbarColor01" style="">
         <ul class="navbar-nav mr-auto" id="nav-list-items">
+
           <li class="nav-item active" id="nav-today">
             <span class="nav-link pointer">Today <span class="sr-only">(current)</span></span>
           </li>
+
           <li class="nav-item dropdown" id="nav-dropdown-week">
             <span class="nav-link dropdown-toggle pointer" id="span-week" role="button" data-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
@@ -45,9 +55,24 @@
             <div class="dropdown-menu" id="nav-dropdown-items-month" aria-labelledby="nav-dropdown-title">
             </div>
           </li>
+
           <li class="nav-item" id="nav-all">
             <span class="nav-link pointer">All</span>
           </li>
+
+          <li class="nav-item dropdown">
+            <span class="nav-link dropdown-toggle pointer" role="button" data-toggle="dropdown" aria-haspopup="true"
+                  aria-expanded="false">
+              Options
+            </span>
+            <div class="dropdown-menu" aria-labelledby="nav-dropdown-title">
+              <span class="dropdown-item pointer" id="toggle-tooltip">Hide tooltip</span>
+              <span class="dropdown-item pointer" id="toggle-visibility">Hide all</span>
+              <span class="dropdown-item pointer" id="toggle-fill">Toggle fill</span>
+              <span class="dropdown-item pointer" id="toggle-slider">Show slider</span>
+            </div>
+          </li>
+
         </ul>
         <div class="form-inline">
           <div class="input-group input-group-sm mb-3r">
@@ -65,24 +90,10 @@
       </div>
     </nav>
 
-    <div class="overlay" id="overlay-no-data" onclick="hideOverlay()">
-      <div class="overlay-center">
-        <h1>No data found</h1>
-      </div>
-      <div class="overlay-center">
-        <br><br>
-        <span id="overlay-info">Click anywhere to continue</span>
-      </div>
-    </div>
-
     <div class="overlay" id="overlay-loading">
       <div class="overlay-center">
         <div class="loader"></div>
       </div>
-    </div>
-
-    <div class="outer">
-      <canvas id="line-chart"></canvas>
     </div>
 
     <div id="alert-container">
@@ -91,12 +102,7 @@
       </div>
     </div>
 
-    <div id="btn-container">
-      <button class="btn btn-dark btn-sm shadow" id="toggle-tooltip">Tooltip: on</button>
-      <button class="btn btn-dark btn-sm shadow" id="showAll">Show all</button>
-      <button class="btn btn-dark btn-sm shadow" id="toggle-fill">Toggle fill</button>
-      <button class="btn btn btn-outline-dark btn-sm shadow" id="view-source">View source</button>
-    </div>
+    <div id="chart"></div>
 
   </body>
   <script src="https://momentjs.com/downloads/moment.js"></script>
@@ -104,43 +110,37 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.js"></script>
-  <script src="/static/line.js"></script>
-  <script src="/static/chart-controller.js"></script>
+  <script src="https://echarts.baidu.com/dist/echarts.min.js"></script>
   <script src="/static/nav-controller.js"></script>
+  <script src="/static/line.js"></script>
   <script>
-    $(document).ready(() => {
-      const $alert = $('#alert-container > div');
+    window.showToolTip = true;
+    window.showAllLines = true;
+    window.showSlider = false;
+    window.fill = false;
 
+    $(document).ready(() => {
       // Enable all tooltips
       $('[data-toggle="tooltip"]').tooltip();
-      $('#view-source').click(() => {
-        let win = window.open('https://github.com/ctcuff/UCFParking-API', '_blank');
-        // The browser has allowed new windows to be opened
-        if (win !== null) {
-          win.focus();
-        }
-      });
+
+      // Collapse the nav bar when any item other than
+      // a drop down is selected
       $('.navbar-collapse span:not(.dropdown-toggle)').click(() => {
         $('.navbar-collapse').collapse('hide');
       });
 
-      $('#alert-container').click(() => {
-        $alert.alert('close');
-      });
-
-      // Enter full screen when F is pressed
-      $('body').keypress(e => {
-        if (e.which === 102) {
-          const el = document.body;
+      // Enter full screen when f is pressed
+      $('body').keypress(key => {
+        if (key.which === 102) {
+          const element = document.body;
 
           // Supports most browsers and their versions.
-          const requestMethod = el.requestFullScreen || el.webkitRequestFullScreen
-              || el.mozRequestFullScreen || el.msRequestFullScreen;
+          const requestMethod = element.requestFullScreen || element.webkitRequestFullScreen
+            || element.mozRequestFullScreen || element.msRequestFullScreen;
 
           // Native full screen.
           if (requestMethod) {
-            requestMethod.call(el);
+            requestMethod.call(element);
           }
           // Older IE.
           else if (typeof window.ActiveXObject !== "undefined") {
@@ -151,12 +151,18 @@
           }
         }
       });
-
-      setTimeout(() => $alert.alert('close'), 3000);
     });
 
-    function hideOverlay() {
-      $('#overlay-no-data').css({ display: 'none' });
+    function showFullscreenAlert() {
+      const $alert = $('#alert-container');
+      $alert.animate({ opacity: 1 }, 1000);
+
+      setTimeout(() => {
+        $alert.animate({ opacity: 0 }, 1000);
+        // Remove the alert from the DOM after it fades out (in case the
+        // animation fails for some reason)
+        setTimeout(() => $('#alert-container > div').alert('close'), 1000);
+      }, 3000);
     }
   </script>
 </html>

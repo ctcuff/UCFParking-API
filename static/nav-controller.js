@@ -31,17 +31,14 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
     initLineChart(API_WEEK);
   });
 
-  // Add weeks 1 to the current week to the nav drop down
+  // Add weeks 1 through the current week to the nav drop down
   for (let i = 0; i <= numWeeks; i++) {
     let beginDate = firstDate.format('MMM DD');
-    // The first date has to be treated differently since it starts on Wednesday
+    // The first week has to be treated differently since it starts on Wednesday
     let endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
 
     const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}"></span>`);
     $child.html(`Week ${i + 1} <small>${beginDate} - ${endDate}</small>`);
-
-    console.log(`begin date: ${beginDate}`);
-    console.log(`end date: ${endDate}`);
 
     $child.click(function () {
       setActive($(this).closest('li'));
@@ -80,6 +77,25 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
   $navAll.click(function () {
     setActive(this);
     initLineChart(API_ALL);
+  });
+
+  $('#toggle-fill').click(() => {
+    toggleFill();
+  });
+
+  $('#toggle-visibility').click(function () {
+    toggleVisible();
+    $(this).text(window.showAllLines ? 'Hide all' : 'Show all');
+  });
+
+  $('#toggle-tooltip').click(function () {
+    toggleTooltip();
+    $(this).text(window.showToolTip ? 'Hide tooltip' : 'Show tooltip');
+  });
+
+  $('#toggle-slider').click(function () {
+    toggleSlider();
+    $(this).text(window.showSlider ? 'Hide slider': 'Show slider');
   });
 
   $inputDate.click(function () { $(this).tooltip('hide') });

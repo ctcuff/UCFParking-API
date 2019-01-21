@@ -1,196 +1,235 @@
-let hiddenStatus = [];
+const $loadingOverlay = $('#overlay-loading');
+const lineChart = echarts.init(document.getElementById('chart'));
+const margin = 50;
+const lineWidth = 4;
 
-// The default behavior is to load the data for today
-function initLineChart(url = API_TODAY) {
-  const canvas = document.getElementById('line-chart');
-  const $loadingOverlay = $('#overlay-loading');
-
-  // Makes sure the chart gets completely reset
-  if (window.chart !== undefined) {
-    // Copy over which data sets where hidden
-    window.chart.data.datasets.forEach((data, index) => {
-      hiddenStatus[index] = data.hidden;
-    });
-    window.chart.destroy();
+$(window).on('resize', function () {
+  if (lineChart !== null && lineChart !== undefined) {
+    lineChart.resize();
   }
+});
 
-  let lineChart = new Chart(canvas.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [
-        {
-          fill: window.fill,
-          borderColor: 'rgba(255, 99, 132, 0.8)',
-          backgroundColor: 'rgba(255, 99, 132, 0.8)',
-          label: 'A',
-          data: [],
-          hidden: false,
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(255, 159, 64, 0.8)',
-          backgroundColor: 'rgba(255, 159, 64, 0.8)',
-          label: 'B',
-          data: [],
-          hidden: window.hideAllLines
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(255, 205, 86, 0.8)',
-          backgroundColor: 'rgba(255, 205, 86, 0.8)',
-          label: 'C',
-          data: [],
-          hidden: window.hideAllLines
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(40, 167, 69, 0.8)',
-          backgroundColor: 'rgba(40, 167, 69, 0.8)',
-          label: 'D',
-          data: [],
-          hidden: window.hideAllLines
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(0, 0, 255, 0.8)',
-          backgroundColor: 'rgba(0, 0, 255, 0.8)',
-          label: 'H',
-          data: [],
-          hidden: window.hideAllLines
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(153, 102, 255, 0.8)',
-          backgroundColor: 'rgba(153, 102, 255, 0.8)',
-          label: 'I',
-          data: [],
-          hidden: window.hideAllLines
-        },
-        {
-          fill: window.fill,
-          borderColor: 'rgba(52, 58, 64, 0.8)',
-          backgroundColor: 'rgba(52, 58, 64, 0.8)',
-          label: 'Libra',
-          data: [],
-          hidden: window.hideAllLines
-        },
-      ]
-    },
-    options: {
-      // Disable animations when loading a lot of data
-      // to prevent lag
-      animation: { duration: url === API_TODAY ? 1000 : 0 },
-      hover: { animationDuration: url === API_TODAY ? 1000 : 0 },
-      title: {
-        display: true,
-        text: 'Garage Availability',
-        position: 'top',
-        padding: 16
+function initLineChart(url) {
+  // Hide the points on the line when showing a lot of data
+  // to improve performance
+  const showSymbol = (url === API_TODAY || url.includes('day'));
+  const labels = {
+    // Contains dates formatted as: 01/01/19
+    original: [],
+    // Contains dates formatted as: Tue Jan 8 12 AM
+    formatted: []
+  };
+  const points = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+
+  $loadingOverlay.css({ display: 'block' });
+  lineChart.clear();
+
+  // Hide the slider when view data for only one day
+  window.showSlider = !(url === API_TODAY || url.includes('day'));
+  $('#toggle-slider').text(window.showSlider ? 'Hide slider' : 'Show slider');
+
+  $.get(url, res => {
+
+    res.data.forEach(garage => {
+      labels.original.push(moment(garage.date).format('MM/DD/YY'));
+      labels.formatted.push(moment(garage.date).format('ddd MMM D - h A'));
+
+      garage.garages.forEach((g, index) => {
+        points[index].push(Math.floor(Math.round(g.percent_full)));
+      });
+    });
+
+    lineChart.setOption({
+      xAxis: {
+        type: 'category',
+        data: labels.original,
+        boundaryGap: false
       },
-      tooltips: {
-        position: 'average',
-        mode: 'index',
-        intersect: false,
-        enabled: window.showToolTip,
-        callbacks: {
-          label: (tooltipItem, tooltipData) => {
-            // Formats the tooltip text to be 'A - 56% Full'
-            const { datasetIndex, index } = tooltipItem;
-            const { label, data } = tooltipData.datasets[datasetIndex];
-            return `${label} - ${data[index]}% Full`;
-          },
-          title: (tooltipItem) => {
-            // Formats the date from 1/2/2019 - 7AM to Wed Jan 2 - 7 AM
-            const { xLabel } = tooltipItem[0];
-            const labelParts = xLabel.split(' ');
-            const date = new Date(`${labelParts[0]}/2019`);
-            return `${date.toString().slice(0, 10)} - ${labelParts[2]} ${labelParts[3]}`;
-          }
+      yAxis: {
+        type: 'value',
+        min: 0,
+        max: 100,
+        name: 'Percent full',
+        nameLocation: 'center',
+      },
+      // Only show the slider when showing large
+      // amounts of data
+      dataZoom: [
+        {
+          start: 0,
+          end: window.showSlider ? 25 : 100,
+          show: window.showSlider
+        },
+        {
+          type: 'inside',
+          moveOnMouseWheel: true,
+          zoomOnMouseWheel: false,
+          show: window.showSlider
         }
-      },
+      ],
+      color: ['#ff829d', '#ffb266', '#ffd778', '#53b96a', '#3333ff', '#ad85ff', '#5d6166'],
       legend: {
-        position: 'bottom',
-        onClick: legendClickListener,
+        type: 'plain',
+        padding: [
+          15,   // Top
+          5,    // Right
+          5,    // Bottom
+          5     // Left
+        ]
       },
-      elements: {
-        line: { tension: window.curved ? 0.4 : 0 },
-        point: {
-          // Disabling the radius when multiple points are showing
-          // improves load time and performance
-          radius: url === API_TODAY || url.includes('day') ? 3 : 0,
-          hitRadius: 5,
-          hoverRadius: 5,
-        }
-      },
-      scales: {
-        yAxes: [{
-          display: true,
-          ticks: {
-            min: 0,
-            max: 100.1,
-            // Work-around to make sure points at 100
-            // don't get cut off
-            callback: (value, index, values) => {
-                if (value !== 100.1)
-                  return values[index];
-              }
+      series: [
+        {
+          name: 'A',
+          data: points[0],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
           },
-          scaleLabel: {
-            display: true,
-            labelString: 'Average percent full'
+        },
+        {
+          name: 'B',
+          data: points[1],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
+          },
+        },
+        {
+          name: 'C',
+          data: points[2],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
           }
-        }],
-        xAxes: [{
-          display: true,
-          gridLines: { display: true },
-          scaleLabel: { display: false, }
-        }],
+        },
+        {
+          name: 'D',
+          data: points[3],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
+          }
+        },
+        {
+          name: 'H',
+          data: points[4],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
+          }
+        },
+        {
+          name: 'I',
+          data: points[5],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
+          }
+        },
+        {
+          name: 'Libra',
+          data: points[6],
+          type: 'line',
+          showSymbol: showSymbol,
+          lineStyle: {
+            width: lineWidth,
+          }
+        },
+      ],
+      grid: {
+        top: margin,
+        // Add more bottom margin when the slider is showing
+        bottom: window.showSlider ? 80 : 40,
+        left: margin,
+        right: margin
       },
+      tooltip: {
+        trigger: 'axis',
+        formatter: function (params) {
+          let date = labels.formatted[params[0].dataIndex];
+          let str = `${date}<br/>`;
+
+          for (let data of params) {
+            const { dataIndex, marker, value, seriesName } = data;
+            date = labels.formatted[dataIndex];
+            str += `${marker}${seriesName}: ${value}% Full<br/>`;
+          }
+          return str;
+        },
+        axisPointer: {
+          lineStyle: {
+            color: '#000',
+          }
+        }
+      }
+    });
+  }).always(() => $loadingOverlay.css({ display: 'none' }));
+}
+
+function toggleTooltip() {
+  window.showToolTip = !window.showToolTip;
+  lineChart.setOption({
+    tooltip: {
+      showContent: window.showToolTip
     }
   });
-
-  // The default legend click listener doesn't toggle the
-  // clicked line's hidden state so it has to be done manually here
-  function legendClickListener(event, legendItem) {
-    let index = legendItem.datasetIndex;
-    let hidden = lineChart.data.datasets[index].hidden;
-    lineChart.data.datasets[index].hidden = !hidden;
-    lineChart.update();
-  }
-
-  function loadGarageData() {
-    $loadingOverlay.css({ display: 'block' });
-
-    $.get(url, resp => {
-      if (resp.data.length === 0) {
-        $('#overlay-no-data').css({ display: 'block' });
-        return;
-      }
-
-      resp.data.forEach(data => {
-        let time = moment(data.date);
-        // Format the date from 2019-01-02T13:01:15.330713 to 1/2 - 1 PM
-        lineChart.data.labels.push(time.format('M/D - h A'));
-
-        data.garages.forEach((garage, index) => {
-          lineChart.data.datasets[index].data.push(Math.round(garage.percent_full));
-        });
-
-      });
-      lineChart.update();
-    }).then(() => $loadingOverlay.css({ display: 'none' }));
-  }
-
-  function updateHidden() {
-    lineChart.data.datasets.forEach((data, index) => {
-      data.hidden = hiddenStatus[index];
-    });
-    lineChart.update();
-  }
-
-  loadGarageData();
-  updateHidden();
-
-  window.chart = lineChart;
 }
+
+function toggleVisible() {
+  window.showAllLines = !window.showAllLines;
+  lineChart.setOption({
+    legend: {
+      selected: {
+        A: window.showAllLines,
+        B: window.showAllLines,
+        C: window.showAllLines,
+        D: window.showAllLines,
+        H: window.showAllLines,
+        I: window.showAllLines,
+        Libra: window.showAllLines,
+      }
+    }
+  });
+}
+
+function toggleFill() {
+  window.fill = !window.fill;
+  lineChart.setOption({
+    series: [
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+      { areaStyle: window.fill ? {} : null },
+    ]
+  });
+}
+
+function toggleSlider() {
+  window.showSlider = !window.showSlider;
+  lineChart.setOption({
+    dataZoom: [
+      {
+        show: window.showSlider,
+        end: window.showSlider ? 25 : 100,
+      },
+      { show: window.showSlider },
+    ],
+    grid: {
+      bottom: window.showSlider ? 80 : 40,
+    }
+  });
+}
+
+$(document).ready(() => {
+  showFullscreenAlert();
+  initLineChart(API_TODAY);
+});
