@@ -1,7 +1,8 @@
 const $loadingOverlay = $('#overlay-loading');
 const lineChart = echarts.init(document.getElementById('chart'));
 const margin = 50;
-const lineWidth = 4;
+// Thinner lines look better on smaller screens
+let lineWidth = $(window).width() <= 800 ? 2 : 4;
 
 $(window).on('resize', function () {
   if (lineChart !== null && lineChart !== undefined) {
@@ -45,13 +46,26 @@ function initLineChart(url) {
         data: labels.original,
         boundaryGap: false
       },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        max: 100,
-        name: 'Percent full',
-        nameLocation: 'center',
-      },
+      yAxis: [
+        {
+          type: 'value',
+          min: 0,
+          max: 100,
+          name: 'Percent full',
+          nameLocation: 'center',
+          nameTextStyle: {
+            padding: [
+              0,  // Top
+              0,  // Right
+              15, // Bottom
+              0   // Left
+            ]
+          }
+        },
+        {
+          type: 'value',
+        }
+      ],
       // Only show the slider when showing large
       // amounts of data
       dataZoom: [
@@ -70,12 +84,7 @@ function initLineChart(url) {
       color: ['#ff829d', '#ffb266', '#ffd778', '#53b96a', '#3333ff', '#ad85ff', '#5d6166'],
       legend: {
         type: 'plain',
-        padding: [
-          15,   // Top
-          5,    // Right
-          5,    // Bottom
-          5     // Left
-        ]
+        padding: [15, 5, 5, 5]
       },
       series: [
         {
@@ -147,7 +156,7 @@ function initLineChart(url) {
         // Add more bottom margin when the slider is showing
         bottom: window.showSlider ? 80 : 40,
         left: margin,
-        right: margin
+        right: margin - 10
       },
       tooltip: {
         trigger: 'axis',
