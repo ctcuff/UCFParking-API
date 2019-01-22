@@ -1,8 +1,10 @@
 const $loadingOverlay = $('#overlay-loading');
 const lineChart = echarts.init(document.getElementById('chart'));
 const margin = 50;
+const thinLine = 2;
+const defaultLineWidth = 4;
 // Thinner lines look better on smaller screens
-let lineWidth = $(window).width() <= 800 ? 2 : 4;
+const lineWidth = $(window).width() <= 800 ? thinLine : defaultLineWidth;
 
 $(window).on('resize', function () {
   if (lineChart !== null && lineChart !== undefined) {
@@ -40,6 +42,24 @@ function initLineChart(url) {
       });
     });
 
+    const lineNames = ['A', 'B', 'C', 'D', 'H', 'I', 'Libra'];
+    const lineData = [];
+
+    for (let i = 0; i < lineNames.length; i++) {
+      lineData.push({
+        name: lineNames[i],
+        data: points[i],
+        type: 'line',
+        showSymbol: showSymbol,
+        lineStyle: {
+          // A thinner line looks better when the area under
+          // the line is filled in
+          width: window.fill ? thinLine : lineWidth,
+        },
+        areaStyle: window.fill ? {} : null
+      });
+    }
+
     lineChart.setOption({
       xAxis: {
         type: 'category',
@@ -66,8 +86,6 @@ function initLineChart(url) {
           type: 'value',
         }
       ],
-      // Only show the slider when showing large
-      // amounts of data
       dataZoom: [
         {
           start: 0,
@@ -86,71 +104,7 @@ function initLineChart(url) {
         type: 'plain',
         padding: [15, 5, 5, 5]
       },
-      series: [
-        {
-          name: 'A',
-          data: points[0],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          },
-        },
-        {
-          name: 'B',
-          data: points[1],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          },
-        },
-        {
-          name: 'C',
-          data: points[2],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          }
-        },
-        {
-          name: 'D',
-          data: points[3],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          }
-        },
-        {
-          name: 'H',
-          data: points[4],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          }
-        },
-        {
-          name: 'I',
-          data: points[5],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          }
-        },
-        {
-          name: 'Libra',
-          data: points[6],
-          type: 'line',
-          showSymbol: showSymbol,
-          lineStyle: {
-            width: lineWidth,
-          }
-        },
-      ],
+      series: lineData,
       grid: {
         top: margin,
         // Add more bottom margin when the slider is showing
@@ -160,7 +114,7 @@ function initLineChart(url) {
       },
       tooltip: {
         trigger: 'axis',
-        formatter: function (params) {
+        formatter: params => {
           let date = labels.formatted[params[0].dataIndex];
           let str = `${date}<br/>`;
 
@@ -178,15 +132,16 @@ function initLineChart(url) {
         }
       }
     });
-  }).always(() => $loadingOverlay.css({ display: 'none' }));
+  }).always(() => {
+    $loadingOverlay.css({ display: 'none' });
+    showFullscreenAlert();
+  });
 }
 
 function toggleTooltip() {
   window.showToolTip = !window.showToolTip;
   lineChart.setOption({
-    tooltip: {
-      showContent: window.showToolTip
-    }
+    tooltip: { showContent: window.showToolTip }
   });
 }
 
@@ -209,17 +164,16 @@ function toggleVisible() {
 
 function toggleFill() {
   window.fill = !window.fill;
-  lineChart.setOption({
-    series: [
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-      { areaStyle: window.fill ? {} : null },
-    ]
-  });
+  const options = [];
+
+  for (let i = 0; i < 7; i++) {
+    options.push({
+      areaStyle: window.fill ? {} : null,
+      lineStyle: { width: window.fill ? thinLine : lineWidth }
+    });
+  }
+
+  lineChart.setOption({ series: options });
 }
 
 function toggleSlider() {
@@ -230,15 +184,12 @@ function toggleSlider() {
         show: window.showSlider,
         end: window.showSlider ? 25 : 100,
       },
-      { show: window.showSlider },
+      {
+        show: window.showSlider
+      },
     ],
-    grid: {
-      bottom: window.showSlider ? 80 : 40,
-    }
+    grid: { bottom: window.showSlider ? 80 : 40 }
   });
 }
 
-$(document).ready(() => {
-  showFullscreenAlert();
-  initLineChart(API_TODAY);
-});
+$(document).ready(() => initLineChart(API_TODAY));
