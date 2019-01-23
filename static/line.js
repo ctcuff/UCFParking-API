@@ -61,6 +61,7 @@ function initLineChart(url) {
     }
 
     lineChart.setOption({
+      url: url,
       xAxis: {
         type: 'category',
         data: labels.original,
@@ -196,7 +197,7 @@ $(document).ready(() => {
   initLineChart(API_TODAY);
 
   $('body').keydown(key => {
-    let { start, end } = lineChart.getOption('dataZoom').dataZoom[0];
+    let { start, end } = lineChart.getOption().dataZoom[0];
 
     switch (key.which) {
       case 39:  // Right pressed so scroll right
@@ -211,7 +212,6 @@ $(document).ready(() => {
         break;
 
       case 37:  // Left pressed so scroll left
-        console.log(start, end);
         if (start <= 0)
           break;
 

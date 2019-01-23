@@ -95,7 +95,27 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
   $('#toggle-slider').click(function () {
     toggleSlider();
-    $(this).text(window.showSlider ? 'Hide slider': 'Show slider');
+    $(this).text(window.showSlider ? 'Hide slider' : 'Show slider');
+  });
+
+  $('#download-data').click(function () {
+    const url = lineChart.getOption().url;
+
+    if (url === null || url === undefined)
+      return;
+
+    $.get(url, res => {
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(res, null, 3)));
+      element.setAttribute('download', 'garage_data.json');
+
+      element.style.display = 'none';
+      document.body.appendChild(element);
+
+      element.click();
+
+      document.body.removeChild(element);
+    });
   });
 
   $inputDate.click(function () { $(this).tooltip('hide') });
