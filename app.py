@@ -1,7 +1,7 @@
 import json
 import traceback
 from requests import get
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from bs4 import BeautifulSoup
 from datetime import datetime
 from sqlalchemy import and_
@@ -161,6 +161,14 @@ def get_data_at_day(month, day):
 @app.errorhandler(404)
 def error404(err):
     return jsonify_error('Page not found')
+
+
+@app.errorhandler(408)
+def error408():
+    send_email('Request timed out. '
+               'Check http://secure.parking.ucf.edu/GarageCount/ to see if the connection is just slow.'
+               )
+    return jsonify_error('Request timed out')
 
 
 @app.errorhandler(500)
