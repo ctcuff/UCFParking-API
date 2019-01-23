@@ -192,4 +192,63 @@ function toggleSlider() {
   });
 }
 
-$(document).ready(() => initLineChart(API_TODAY));
+$(document).ready(() => {
+  initLineChart(API_TODAY);
+
+  $('body').keydown(key => {
+    let { start, end } = lineChart.getOption('dataZoom').dataZoom[0];
+
+    switch (key.which) {
+      case 39:  // Right pressed so scroll right
+        if (end === 100)
+          break;
+
+        lineChart.dispatchAction({
+          type: 'dataZoom',
+          start: ++start,
+          end: ++end
+        });
+        break;
+
+      case 37:  // Left pressed so scroll left
+        console.log(start, end);
+        if (start <= 0)
+          break;
+
+        lineChart.dispatchAction({
+          type: 'dataZoom',
+          start: --start,
+          end: --end
+        });
+        break;
+
+      case 38:  // Up pressed so zoom in
+        if (start === end)
+          break;
+
+        lineChart.dispatchAction({
+          type: 'dataZoom',
+          start: ++start,
+          end: --end
+        });
+        break;
+
+      case 40:  // Down pressed so zoom out
+        if (start > 0)
+          start--;
+
+        if (end < 100)
+          end++;
+
+        if (start === 0 && end === 100)
+          break;
+
+        lineChart.dispatchAction({
+          type: 'dataZoom',
+          start: start,
+          end: end
+        });
+        break;
+    }
+  });
+});
