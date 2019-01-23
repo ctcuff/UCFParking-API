@@ -13,6 +13,22 @@ html {
   animation: spin 2s linear infinite;
 }
 
+@media screen and (max-width: 800px) {
+  .loader {
+    border: 5px solid white;
+    border-radius: 50%;
+    border-top: 5px solid #212529;
+    width: 55px;
+    height: 55px;
+    -webkit-animation: spin 1s linear infinite; /* For Safari */
+    animation: spin 1s linear infinite;
+  }
+}
+
+.pointer {
+  cursor: pointer;
+}
+
 .overlay {
   margin: auto;
   position: fixed;
@@ -52,6 +68,7 @@ html {
 
 #alert-container > div {
   position: absolute;
+  z-index: 1000;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -60,10 +77,6 @@ html {
 .alert {
   width: 30%;
   text-align: center;
-}
-
-.pointer {
-  cursor: pointer;
 }
 
 #overlay-loading {

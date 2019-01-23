@@ -68,10 +68,10 @@
               Options
             </span>
             <div class="dropdown-menu" aria-labelledby="nav-dropdown-title">
-              <span class="dropdown-item pointer" id="toggle-tooltip">Hide tooltip</span>
-              <span class="dropdown-item pointer" id="toggle-visibility">Hide all</span>
-              <span class="dropdown-item pointer" id="toggle-fill">Toggle fill</span>
-              <span class="dropdown-item pointer" id="toggle-slider">Show slider</span>
+              <span class="dropdown-item pointer option" id="toggle-tooltip">Hide tooltip</span>
+              <span class="dropdown-item pointer option" id="toggle-visibility">Hide all</span>
+              <span class="dropdown-item pointer option" id="toggle-fill">Toggle fill</span>
+              <span class="dropdown-item pointer option" id="toggle-slider">Show slider</span>
             </div>
           </li>
 
@@ -138,7 +138,7 @@
 
           // Supports most browsers and their versions.
           const requestMethod = element.requestFullScreen || element.webkitRequestFullScreen
-            || element.mozRequestFullScreen || element.msRequestFullScreen;
+              || element.mozRequestFullScreen || element.msRequestFullScreen;
 
           // Native full screen.
           if (requestMethod) {
