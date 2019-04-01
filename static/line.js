@@ -3,6 +3,8 @@ const lineChart = echarts.init(document.getElementById('chart'));
 const margin = 50;
 const thinLine = 2;
 const defaultLineWidth = 4;
+const lineNames = ['A', 'B', 'C', 'D', 'H', 'I', 'Libra'];
+
 // Thinner lines look better on smaller screens
 const lineWidth = $(window).width() <= 800 ? thinLine : defaultLineWidth;
 
@@ -27,8 +29,8 @@ function initLineChart(url) {
   $loadingOverlay.css({ display: 'block' });
   lineChart.clear();
 
-  // Hide the slider when view data for only one day
-  window.showSlider = !(url === API_TODAY || url.includes('day'));
+  // Hide the slider when viewing data for only one day
+  window.showSlider = url === API_ALL;
   $('#toggle-slider').text(window.showSlider ? 'Hide slider' : 'Show slider');
 
   $.get(url, res => {
@@ -42,7 +44,6 @@ function initLineChart(url) {
       });
     });
 
-    const lineNames = ['A', 'B', 'C', 'D', 'H', 'I', 'Libra'];
     const lineData = [];
 
     for (let i = 0; i < lineNames.length; i++) {
@@ -53,8 +54,8 @@ function initLineChart(url) {
         showSymbol: showSymbol,
         lineStyle: {
           // A thinner line looks better when the area under
-          // the line is filled in
-          width: window.fill ? thinLine : lineWidth,
+          // the line is filled in or when there are more than 24 points
+          width: (window.fill || res.data.length > 24) ? thinLine : lineWidth,
         },
         areaStyle: window.fill ? {} : null
       });
@@ -117,14 +118,15 @@ function initLineChart(url) {
         trigger: 'axis',
         formatter: params => {
           let date = labels.formatted[params[0].dataIndex];
-          let str = `${date}<br/>`;
+          let tooltipText = `${date}<br/>`;
 
-          for (let data of params) {
-            const { dataIndex, marker, value, seriesName } = data;
+          params.forEach(param => {
+            const { dataIndex, marker, value, seriesName } = param;
             date = labels.formatted[dataIndex];
-            str += `${marker}${seriesName}: ${value}% Full<br/>`;
-          }
-          return str;
+            tooltipText += `${marker}${seriesName}: ${value}% Full<br/>`;
+          });
+
+          return tooltipText;
         },
         axisPointer: {
           lineStyle: {
@@ -163,26 +165,13 @@ function toggleVisible() {
   });
 }
 
-function toggleFill() {
-  window.fill = !window.fill;
-  const options = [];
-
-  for (let i = 0; i < 7; i++) {
-    options.push({
-      areaStyle: window.fill ? {} : null,
-      lineStyle: { width: window.fill ? thinLine : lineWidth }
-    });
-  }
-
-  lineChart.setOption({ series: options });
-}
-
 function toggleSlider() {
   window.showSlider = !window.showSlider;
   lineChart.setOption({
     dataZoom: [
       {
         show: window.showSlider,
+        start: 0,
         end: window.showSlider ? 25 : 100,
       },
       {
@@ -196,6 +185,8 @@ function toggleSlider() {
 $(document).ready(() => {
   initLineChart(API_TODAY);
 
+  // Allows the chart to scroll / zoom based on
+  // which arrow key was pressed
   $('body').keydown(key => {
     let { start, end } = lineChart.getOption().dataZoom[0];
 
