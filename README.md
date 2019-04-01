@@ -6,8 +6,8 @@ How exactly is this useful you ask? Well, making a request to the `/api` route r
 # How does it work?
 Heroku scheduler is a Heroku addon that can run a command at set intervals. Every hour, Heroku runs the `curl` command to the `/add` route (which requires a key) which scrapes UCF's parking site, extracts the garage info, and saves it to a PostgreSQL database. The `/add` route requires a key to prevent a regular user from making a request and adding data outside of that hourly interval. The table looks something like this (the values aren't exact):
 
-Date                       |id |garage_data                                               |month  |week |day
----------------------------|---|-----------------------------------------------------------|------|-----|---
+Date                       |id  |garage_data                                              |month  |week |day
+---------------------------|----|---------------------------------------------------------|-------|-----|---
 2019-01-02T22:00:49.044984 |10  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1      |0    |2
 2019-01-02T23:01:23.357748 |11  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1      |0    |2
 2019-01-02T00:00:45.357748 |12  |{"garages": [{"name": "Garage A", "max_spaces": 1623...} |1      |0    |3
@@ -43,13 +43,13 @@ This code in this repo is actually 2 projects merged into one. The api is hosted
   * Returns data for the current date (starting at 12 AM)
 * [`/data/week`](https://ucf-garages.herokuapp.com/data/week)
    * Returns data for the current week
-   * Note that the first week starts at Jan, 2 since that was the day the sight first went up
+   * Note that the first week starts at Jan, 2 since that was the day the site first went up
    * Every other week starts on Sunday
 * `/data/week/{week}`
    * For example: [`/data/week/1`](https://ucf-garages.herokuapp.com/data/week/1)
    * The range for `{week}` is 0 - 52
 * [`/data/month`](https://ucf-garages.herokuapp.com/data/month)
-  * Returns data for thecurrent month
+  * Returns data for the current month
 * `/data/month/{month}`
    * For example: [`/data/month/1`](https://ucf-garages.herokuapp.com/data/month/1)
    * The range for `{month}` is 1 - 12
