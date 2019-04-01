@@ -139,4 +139,5 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
     // day when it's not selected
     $inputDate.datepicker('update', today.format('M/D/YYYY'));
   }
+
 })();
