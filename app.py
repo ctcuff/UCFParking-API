@@ -1,12 +1,14 @@
 import json
 import traceback
+import dropbox
+from dropbox.files import WriteMode
 from requests import get
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request
 from bs4 import BeautifulSoup
 from datetime import datetime
 from sqlalchemy import and_
 from flask_cors import CORS
-from config import DATABASE_URL, KEY
+from config import DATABASE_URL, KEY, DBOX_TOKEN
 from models import *
 from email_helper import send_email
 
@@ -15,9 +17,11 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 
-# Allows requests from other languages
 CORS(app)
 db.init_app(app)
+
+dbx = dropbox.Dropbox(DBOX_TOKEN)
+SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
 
 
 def jsonify_error(msg):
@@ -27,11 +31,10 @@ def jsonify_error(msg):
 @app.route('/')
 @app.route('/api')
 def api():
-    url = 'http://secure.parking.ucf.edu/GarageCount/'
-    page = get(url)
+    page = get(SCRAPE_URL)
 
     if page.status_code != 200:
-        send_email(f"An error occurred in api(): Couldn't parse HTML (is {url} down?):\n\n{page.text}")
+        send_email(f"An error occurred in api(): Couldn't parse HTML (is {SCRAPE_URL} down?):\n\n{page.text}")
         return jsonify_error(page.text)
 
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -64,12 +67,13 @@ def api():
     if len(garage_data['garages']) == 0:
         send_email(
             f'No garage data was found. '
-            f'Check {url} to see if the website has changed or is no longer running'
+            f'Check {SCRAPE_URL} to see if the website has changed or is no longer running'
         )
 
     return jsonify(garage_data)
 
 
+# noinspection PyBroadException
 @app.route('/add')
 def add():
     header_key = request.headers.get('key')
@@ -93,6 +97,21 @@ def add():
     except Exception as e:
         send_email(f'An error occurred in add(): {traceback.format_exc()}')
         return jsonify_error(f'Failed to add data: {str(e)}')
+
+    try:
+        # Save a backup of all json data to Dropbox
+        resp = get('https://ucf-garages.herokuapp.com/data/all')
+        content = json.dumps(resp.json(), indent=3)
+
+        status = dbx.files_upload(
+            bytes(content, encoding='utf8'),
+            '/ucf-garage-backup/data_backup.json',
+            mode=WriteMode('overwrite')
+        )
+
+        print(status)
+    except Exception:
+        send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
 
     return jsonify({'response': 'Successfully added data'})
 
@@ -165,9 +184,10 @@ def error404(err):
 
 @app.errorhandler(408)
 def error408():
-    send_email('Request timed out. '
-               'Check http://secure.parking.ucf.edu/GarageCount/ to see if the connection is just slow.'
-               )
+    send_email(
+        'Request timed out. '
+        f'Check {SCRAPE_URL} to see if the connection is just slow.'
+    )
     return jsonify_error('Request timed out')
 
 
