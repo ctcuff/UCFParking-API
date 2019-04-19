@@ -46,10 +46,10 @@ function initLineChart(url) {
 
     const lineData = [];
 
-    for (let i = 0; i < lineNames.length; i++) {
+    lineNames.forEach((lineName, index) => {
       lineData.push({
-        name: lineNames[i],
-        data: points[i],
+        name: lineName,
+        data: points[index],
         type: 'line',
         showSymbol: showSymbol,
         lineStyle: {
@@ -59,7 +59,7 @@ function initLineChart(url) {
         },
         areaStyle: window.fill ? {} : null
       });
-    }
+    });
 
     lineChart.setOption({
       url: url,
@@ -91,7 +91,9 @@ function initLineChart(url) {
       dataZoom: [
         {
           start: 0,
-          end: window.showSlider ? 25 : 100,
+          // Only show 10% of the slider when viewing large
+          // amounts of data
+          end: window.showSlider ? 10 : 100,
           show: window.showSlider
         },
         {
@@ -172,7 +174,7 @@ function toggleSlider() {
       {
         show: window.showSlider,
         start: 0,
-        end: window.showSlider ? 25 : 100,
+        end: window.showSlider ? 10 : 100,
       },
       {
         show: window.showSlider
