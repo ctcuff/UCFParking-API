@@ -4,9 +4,10 @@ const margin = 50;
 const thinLine = 2;
 const defaultLineWidth = 4;
 const lineNames = ['A', 'B', 'C', 'D', 'H', 'I', 'Libra'];
+const isMobile = $(window).width() <= 900;
 
 // Thinner lines look better on smaller screens
-const lineWidth = $(window).width() <= 800 ? thinLine : defaultLineWidth;
+const lineWidth = isMobile ? thinLine : defaultLineWidth;
 
 $(window).on('resize', function () {
   if (lineChart !== null && lineChart !== undefined) {
@@ -18,6 +19,7 @@ function initLineChart(url) {
   // Hide the points on the line when showing a lot of data
   // to improve performance
   const showSymbol = (url === API_TODAY || url.includes('day'));
+  
   const labels = {
     // Contains dates formatted as: 01/01/19
     original: [],
@@ -51,7 +53,9 @@ function initLineChart(url) {
         name: lineName,
         data: points[index],
         type: 'line',
-        showSymbol: showSymbol,
+        // If this is a mobile device, we'll want to hide all line points
+        // since it increases mobile performance
+        showSymbol: isMobile ? false : showSymbol,
         lineStyle: {
           // A thinner line looks better when the area under
           // the line is filled in or when there are more than 24 points
@@ -174,7 +178,7 @@ function toggleSlider() {
       {
         show: window.showSlider,
         start: 0,
-        end: window.showSlider ? 10 : 100,
+        end: window.showSlider ? 25 : 100,
       },
       {
         show: window.showSlider
