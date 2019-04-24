@@ -13,7 +13,7 @@ html {
   animation: spin 2s linear infinite;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 900px) {
   .loader {
     border: 5px solid white;
     border-radius: 50%;

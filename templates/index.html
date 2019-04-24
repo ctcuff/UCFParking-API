@@ -156,6 +156,10 @@
     });
 
     function showFullscreenAlert() {
+      // Don't show this alert on mobile devices
+      if ($(window).width() <= 900)
+        return;
+
       const $alert = $('#alert-container');
       $alert.animate({ opacity: 1 }, 1000);
 
