@@ -154,6 +154,21 @@ function toggleTooltip() {
   });
 }
 
+function toggleFill() {
+  window.fill = !window.fill;
+  const options = [];
+
+  for (let i = 0; i < lineNames.length; i++) {
+    options.push({
+      areaStyle: window.fill ? {} : null,
+      lineStyle: { width: window.fill ? thinLine : lineWidth }
+    });
+  }
+
+  lineChart.setOption({ series: options });
+}
+
+
 function toggleVisible() {
   window.showAllLines = !window.showAllLines;
   lineChart.setOption({
