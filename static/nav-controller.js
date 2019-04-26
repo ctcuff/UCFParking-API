@@ -33,9 +33,9 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
   // Add weeks 1 through the current week to the nav drop down
   for (let i = 0; i <= numWeeks; i++) {
-    let beginDate = firstDate.format('MMM DD');
+    const beginDate = firstDate.format('MMM DD');
     // The first week has to be treated differently since it starts on Wednesday
-    let endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
+    const endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
 
     const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}"></span>`);
     $child.html(`Week ${i + 1} <small>${beginDate} - ${endDate}</small>`);
@@ -88,14 +88,12 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
     $(this).text(window.showAllLines ? 'Hide all' : 'Show all');
   });
 
-  $('#toggle-tooltip').click(function () {
+  $('#toggle-tooltip').click(() => {
     toggleTooltip();
-    $(this).text(window.showToolTip ? 'Hide tooltip' : 'Show tooltip');
   });
 
-  $('#toggle-slider').click(function () {
+  $('#toggle-slider').click(() => {
     toggleSlider();
-    $(this).text(window.showSlider ? 'Hide slider' : 'Show slider');
   });
 
   $inputDate.click(function () { $(this).tooltip('hide') });
@@ -106,7 +104,7 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
     startDate: '1/2/2019',
     endDate: today.format('M/D/YYYY')
   }).on('changeDate', event => {
-    for (let child of $navItems.children())
+    for (const child of $navItems.children())
       $(child).removeClass('active');
 
     $('.navbar-collapse').collapse('hide');
@@ -129,7 +127,7 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
     $element.addClass('active');
 
-    for (let child of $navItems.children()) {
+    for (const child of $navItems.children()) {
       const $child = $(child);
       if ($child.attr('id') !== $element.attr('id')) {
         $child.removeClass('active');

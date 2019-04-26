@@ -19,7 +19,7 @@ function initLineChart(url) {
   // Hide the points on the line when showing a lot of data
   // to improve performance
   const showSymbol = (url === API_TODAY || url.includes('day'));
-  
+
   const labels = {
     // Contains dates formatted as: 01/01/19
     original: [],
@@ -30,8 +30,6 @@ function initLineChart(url) {
 
   $loadingOverlay.css({ display: 'block' });
   lineChart.clear();
-
-  $('#toggle-slider').text(window.showSlider ? 'Hide slider' : 'Show slider');
 
   $.get(url, (res) => {
     // Show the slider when the chart has 200 or more points
@@ -110,7 +108,16 @@ function initLineChart(url) {
       color: ['#ff829d', '#ffb266', '#ffd778', '#53b96a', '#3333ff', '#ad85ff', '#5d6166'],
       legend: {
         type: 'plain',
-        padding: [15, 5, 5, 5]
+        padding: [15, 5, 5, 5],
+        selected: {
+          A: window.showAllLines,
+          B: window.showAllLines,
+          C: window.showAllLines,
+          D: window.showAllLines,
+          H: window.showAllLines,
+          I: window.showAllLines,
+          Libra: window.showAllLines,
+        }
       },
       series: lineData,
       grid: {
@@ -263,7 +270,7 @@ $(document).ready(() => {
           end++;
 
         // The chart is fully zoomed out so don't attempt
-        // to zoomany further
+        // to zoom any further
         if (start === 0 && end === 100)
           break;
 
