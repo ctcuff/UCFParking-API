@@ -9,7 +9,8 @@ html {
   border-top: 8px solid #212529;
   width: 80px;
   height: 80px;
-  -webkit-animation: spin 2s linear infinite; /* For Safari */
+  /* For Safari */
+  -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
 }
 
@@ -20,7 +21,8 @@ html {
     border-top: 5px solid #212529;
     width: 55px;
     height: 55px;
-    -webkit-animation: spin 1s linear infinite; /* For Safari */
+    /* For Safari */
+    -webkit-animation: spin 1s linear infinite;
     animation: spin 1s linear infinite;
   }
 }
@@ -41,7 +43,6 @@ html {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 2;
-  cursor: pointer;
 }
 
 .overlay > div {
@@ -54,7 +55,7 @@ html {
   transform: translate(-50%, -50%);
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 900px) {
   #alert-container {
     visibility: hidden;
     display: none;
@@ -77,6 +78,20 @@ html {
 .alert {
   width: 30%;
   text-align: center;
+}
+
+.scrollable-menu {
+  height: auto;
+  max-height: 400px;
+  overflow-x: hidden;
+}
+
+@media screen and (max-width: 900px) {
+  .scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+  }
 }
 
 #overlay-loading {
