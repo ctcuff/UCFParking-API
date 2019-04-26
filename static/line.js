@@ -31,13 +31,13 @@ function initLineChart(url) {
   $loadingOverlay.css({ display: 'block' });
   lineChart.clear();
 
-  // Hide the slider when viewing data for only one day
-  window.showSlider = url === API_ALL;
   $('#toggle-slider').text(window.showSlider ? 'Hide slider' : 'Show slider');
 
-  $.get(url, res => {
+  $.get(url, (res) => {
+    // Show the slider when the chart has 200 or more points
+    window.showSlider = res.data.length >= 200;
 
-    res.data.forEach(garage => {
+    res.data.forEach((garage) => {
       labels.original.push(moment(garage.date).format('MM/DD/YY'));
       labels.formatted.push(moment(garage.date).format('ddd MMM D - h A'));
 
@@ -122,11 +122,11 @@ function initLineChart(url) {
       },
       tooltip: {
         trigger: 'axis',
-        formatter: params => {
+        formatter: (params) => {
           let date = labels.formatted[params[0].dataIndex];
           let tooltipText = `${date}<br/>`;
 
-          params.forEach(param => {
+          params.forEach((param) => {
             const { dataIndex, marker, value, seriesName } = param;
             date = labels.formatted[dataIndex];
             tooltipText += `${marker}${seriesName}: ${value}% Full<br/>`;
@@ -150,24 +150,32 @@ function initLineChart(url) {
 function toggleTooltip() {
   window.showToolTip = !window.showToolTip;
   lineChart.setOption({
-    tooltip: { showContent: window.showToolTip }
+    tooltip: {
+      showContent: window.showToolTip
+    }
   });
 }
 
 function toggleFill() {
   window.fill = !window.fill;
+  const chartData = lineChart.getOption();
+  const numPoints = chartData.series[0].data.length;
   const options = [];
 
   for (let i = 0; i < lineNames.length; i++) {
     options.push({
       areaStyle: window.fill ? {} : null,
-      lineStyle: { width: window.fill ? thinLine : lineWidth }
+      lineStyle: {
+        // Makes the chart's lines thin when the area underneath
+        // is filled but returns it to its default width when
+        // there is no fill
+        width: (window.fill || numPoints > 24) ? thinLine : lineWidth
+      }
     });
   }
 
   lineChart.setOption({ series: options });
 }
-
 
 function toggleVisible() {
   window.showAllLines = !window.showAllLines;
@@ -193,13 +201,15 @@ function toggleSlider() {
       {
         show: window.showSlider,
         start: 0,
-        end: window.showSlider ? 25 : 100,
+        end: window.showSlider ? 10 : 100,
       },
       {
         show: window.showSlider
       },
     ],
-    grid: { bottom: window.showSlider ? 80 : 40 }
+    grid: {
+      bottom: window.showSlider ? 80 : 40
+    }
   });
 }
 
@@ -208,7 +218,7 @@ $(document).ready(() => {
 
   // Allows the chart to scroll / zoom based on
   // which arrow key was pressed
-  $('body').keydown(key => {
+  $('body').keydown((key) => {
     let { start, end } = lineChart.getOption().dataZoom[0];
 
     switch (key.which) {
@@ -252,6 +262,8 @@ $(document).ready(() => {
         if (end < 100)
           end++;
 
+        // The chart is fully zoomed out so don't attempt
+        // to zoomany further
         if (start === 0 && end === 100)
           break;
 
