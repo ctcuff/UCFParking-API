@@ -11,6 +11,7 @@ from flask_cors import CORS
 from config import DATABASE_URL, KEY, DBOX_TOKEN
 from models import *
 from email_helper import send_email
+from threading import Thread
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -98,20 +99,10 @@ def add():
         send_email(f'An error occurred in add(): {traceback.format_exc()}')
         return jsonify_error(f'Failed to add data: {str(e)}')
 
-    try:
-        # Save a backup of all json data to Dropbox
-        resp = get('https://ucf-garages.herokuapp.com/data/all')
-        content = json.dumps(resp.json(), indent=3)
-
-        status = dbx.files_upload(
-            bytes(content, encoding='utf8'),
-            '/ucf-garage-backup/data_backup.json',
-            mode=WriteMode('overwrite')
-        )
-
-        print(status)
-    except Exception:
-        send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
+    # Upload the data on a separate thread so the
+    # main thread doesn't have to wait
+    upload = Thread(target=upload_backup)
+    upload.start()
 
     return jsonify({'response': 'Successfully added data'})
 
@@ -211,6 +202,27 @@ def query_data(query):
         ]
     }
     return jsonify(data)
+
+
+# noinspection PyBroadException
+def upload_backup():
+    """
+    Saves a backup of all json to Dropbox
+    """
+    try:
+        resp = get('https://ucf-garages.herokuapp.com/data/all')
+        content = json.dumps(resp.json(), indent=3)
+
+        status = dbx.files_upload(
+            bytes(content, encoding='utf8'),
+            '/ucf-garage-backup/data_backup.json',
+            mode=WriteMode('overwrite')
+        )
+
+        print(status)
+
+    except Exception:
+        send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
 
 
 if __name__ == '__main__':
