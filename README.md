@@ -41,7 +41,7 @@ This code in this repo is actually 2 projects merged into one. The api is hosted
 * [`/api`](https://ucf-garages.herokuapp.com/api)
    * Returns JSON containing parking garage info (asumming UCF's parking website is still up...)
 * [`/data/all`](https://ucf-garages.herokuapp.com/data/all)
-  * Returns **ALL THE JSON AND WILL BE SLOW!!!**
+  * Returns **ALL THE JSON!!!**
 * [`/data/today`](https://ucf-garages.herokuapp.com/data/today)
   * Returns data for the current date (starting at 12 AM)
 * [`/data/week`](https://ucf-garages.herokuapp.com/data/week)
