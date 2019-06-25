@@ -13,7 +13,13 @@
     <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/static/style.css">
-
+    <!--    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-140927225-1"></script>-->
+    <!--    <script>-->
+    <!--      window.dataLayer = window.dataLayer || [];-->
+    <!--      function gtag(){ dataLayer.push(arguments); }-->
+    <!--      gtag('js', new Date());-->
+    <!--      gtag('config', 'UA-140927225-1');-->
+    <!--    </script>-->
   </head>
   <body>
 
@@ -111,6 +117,7 @@
   </body>
   <script src="https://momentjs.com/downloads/moment.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
@@ -139,8 +146,10 @@
           const element = document.body;
 
           // Supports most browsers and their versions.
-          const requestMethod = element.requestFullScreen || element.webkitRequestFullScreen
-              || element.mozRequestFullScreen || element.msRequestFullScreen;
+          const requestMethod = element.requestFullScreen
+            || element.webkitRequestFullScreen
+            || element.mozRequestFullScreen
+            || element.msRequestFullScreen;
 
           // Native full screen.
           if (requestMethod) {
