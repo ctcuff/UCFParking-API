@@ -1,15 +1,15 @@
-const $loadingOverlay = $('#overlay-loading');
+const loadingOverlay = document.getElementById('overlay-loading');
 const lineChart = echarts.init(document.getElementById('chart'));
 const margin = 50;
 const thinLine = 2;
 const defaultLineWidth = 4;
 const lineNames = ['A', 'B', 'C', 'D', 'H', 'I', 'Libra'];
-const isMobile = $(window).width() <= 900;
+const isMobile = window.innerWidth <= 900;
 
 // Thinner lines look better on smaller screens
 const lineWidth = isMobile ? thinLine : defaultLineWidth;
 
-$(window).on('resize', function () {
+window.addEventListener('resize', () => {
   if (lineChart !== null && lineChart !== undefined) {
     lineChart.resize();
   }
@@ -28,130 +28,134 @@ function initLineChart(url) {
   };
   const points = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
 
-  $loadingOverlay.css({ display: 'block' });
+  loadingOverlay.style.display = 'block';
   lineChart.clear();
 
-  $.get(url, (res) => {
-    // Show the slider when the chart has 200 or more points
-    window.showSlider = res.data.length >= 200;
+  axios.get(url)
+    .then(res => {
+      const data = res.data.data;
 
-    res.data.forEach((garage) => {
-      labels.original.push(moment(garage.date).format('MM/DD/YY'));
-      labels.formatted.push(moment(garage.date).format('ddd MMM D - h A'));
+      // Show the slider when the chart has 200 or more points
+      window.showSlider = data.length >= 200;
 
-      garage.garages.forEach((g, index) => {
-        points[index].push(Math.floor(Math.round(g.percent_full)));
+      data.forEach((garage) => {
+        labels.original.push(moment(garage.date).format('MM/DD/YY'));
+        labels.formatted.push(moment(garage.date).format('ddd MMM D - h A'));
+
+        garage.garages.forEach((g, index) => {
+          points[index].push(Math.floor(Math.round(g.percent_full)));
+        });
       });
-    });
 
-    const lineData = [];
+      const lineData = [];
 
-    lineNames.forEach((lineName, index) => {
-      lineData.push({
-        name: lineName,
-        data: points[index],
-        type: 'line',
-        // If this is a mobile device, we'll want to hide all line points
-        // since it increases mobile performance
-        showSymbol: isMobile ? false : showSymbol,
-        lineStyle: {
-          // A thinner line looks better when the area under
-          // the line is filled in or when there are more than 24 points
-          width: (window.fill || res.data.length > 24) ? thinLine : lineWidth,
-        },
-        areaStyle: window.fill ? {} : null
-      });
-    });
-
-    lineChart.setOption({
-      url: url,
-      xAxis: {
-        type: 'category',
-        data: labels.original,
-        boundaryGap: false
-      },
-      yAxis: [
-        {
-          type: 'value',
-          min: 0,
-          max: 100,
-          name: 'Percent full',
-          nameLocation: 'center',
-          nameTextStyle: {
-            padding: [
-              0,  // Top
-              0,  // Right
-              15, // Bottom
-              0   // Left
-            ]
-          }
-        },
-        {
-          type: 'value',
-        }
-      ],
-      dataZoom: [
-        {
-          start: 0,
-          // Only show 10% of the slider when viewing large
-          // amounts of data
-          end: window.showSlider ? 10 : 100,
-          show: window.showSlider
-        },
-        {
-          type: 'inside',
-          moveOnMouseWheel: true,
-          zoomOnMouseWheel: false,
-          show: window.showSlider
-        }
-      ],
-      color: ['#ff829d', '#ffb266', '#ffd778', '#53b96a', '#3333ff', '#ad85ff', '#5d6166'],
-      legend: {
-        type: 'plain',
-        padding: [15, 5, 5, 5],
-        selected: {
-          A: window.showAllLines,
-          B: window.showAllLines,
-          C: window.showAllLines,
-          D: window.showAllLines,
-          H: window.showAllLines,
-          I: window.showAllLines,
-          Libra: window.showAllLines,
-        }
-      },
-      series: lineData,
-      grid: {
-        top: margin,
-        // Add more bottom margin when the slider is showing
-        bottom: window.showSlider ? 80 : 40,
-        left: margin,
-        right: margin - 10
-      },
-      tooltip: {
-        trigger: 'axis',
-        formatter: (params) => {
-          let date = labels.formatted[params[0].dataIndex];
-          let tooltipText = `${date}<br/>`;
-
-          params.forEach((param) => {
-            const { dataIndex, marker, value, seriesName } = param;
-            date = labels.formatted[dataIndex];
-            tooltipText += `${marker}${seriesName}: ${value}% Full<br/>`;
-          });
-
-          return tooltipText;
-        },
-        axisPointer: {
+      lineNames.forEach((lineName, index) => {
+        lineData.push({
+          name: lineName,
+          data: points[index],
+          type: 'line',
+          // If this is a mobile device, we'll want to hide all line points
+          // since it increases mobile performance
+          showSymbol: isMobile ? false : showSymbol,
           lineStyle: {
-            color: '#000',
+            // A thinner line looks better when the area under
+            // the line is filled in or when there are more than 24 points
+            width: (window.fill || data.length > 24) ? thinLine : lineWidth,
+          },
+          areaStyle: window.fill ? {} : null
+        });
+      });
+
+      lineChart.setOption({
+        url: url,
+        xAxis: {
+          type: 'category',
+          data: labels.original,
+          boundaryGap: false
+        },
+        yAxis: [
+          {
+            type: 'value',
+            min: 0,
+            max: 100,
+            name: 'Percent full',
+            nameLocation: 'center',
+            nameTextStyle: {
+              padding: [
+                0,  // Top
+                0,  // Right
+                15, // Bottom
+                0   // Left
+              ]
+            }
+          },
+          {
+            type: 'value',
+          }
+        ],
+        dataZoom: [
+          {
+            start: 0,
+            // Only show 10% of the slider when viewing large
+            // amounts of data
+            end: window.showSlider ? 10 : 100,
+            show: window.showSlider
+          },
+          {
+            type: 'inside',
+            moveOnMouseWheel: true,
+            zoomOnMouseWheel: false,
+            show: window.showSlider
+          }
+        ],
+        color: ['#ff829d', '#ffb266', '#ffd778', '#53b96a', '#3333ff', '#ad85ff', '#5d6166'],
+        legend: {
+          type: 'plain',
+          padding: [15, 5, 5, 5],
+          selected: {
+            A: window.showAllLines,
+            B: window.showAllLines,
+            C: window.showAllLines,
+            D: window.showAllLines,
+            H: window.showAllLines,
+            I: window.showAllLines,
+            Libra: window.showAllLines,
+          }
+        },
+        series: lineData,
+        grid: {
+          top: margin,
+          // Add more bottom margin when the slider is showing
+          bottom: window.showSlider ? 80 : 40,
+          left: margin,
+          right: margin - 10
+        },
+        tooltip: {
+          trigger: 'axis',
+          formatter: (params) => {
+            let date = labels.formatted[params[0].dataIndex];
+            let tooltipText = `${date}<br/>`;
+
+            params.forEach((param) => {
+              const { dataIndex, marker, value, seriesName } = param;
+              date = labels.formatted[dataIndex];
+              tooltipText += `${marker}${seriesName}: ${value}% Full<br/>`;
+            });
+
+            return tooltipText;
+          },
+          axisPointer: {
+            lineStyle: {
+              color: '#000',
+            }
           }
         }
-      }
+      });
+    })
+    .finally(() => {
+      loadingOverlay.style.display = 'none';
+      showFullscreenAlert();
     });
-  }).always(() => {
-    $loadingOverlay.css({ display: 'none' });
-    showFullscreenAlert();
-  });
 }
 
 function toggleTooltip() {
@@ -212,7 +216,7 @@ function toggleSlider() {
       },
       {
         show: window.showSlider
-      },
+      }
     ],
     grid: {
       bottom: window.showSlider ? 80 : 40
@@ -220,66 +224,64 @@ function toggleSlider() {
   });
 }
 
-$(document).ready(() => {
-  initLineChart(API_TODAY);
+initLineChart(API_TODAY);
 
-  // Allows the chart to scroll / zoom based on
-  // which arrow key was pressed
-  $('body').keydown((key) => {
-    let { start, end } = lineChart.getOption().dataZoom[0];
+// Allows the chart to scroll / zoom based on
+// which arrow key was pressed
+document.onkeydown = ({ keyCode }) => {
+  let { start, end } = lineChart.getOption().dataZoom[0];
 
-    switch (key.which) {
-      case 39:  // Right pressed so scroll right
-        if (end === 100)
-          break;
-
-        lineChart.dispatchAction({
-          type: 'dataZoom',
-          start: ++start,
-          end: ++end
-        });
+  switch (keyCode) {
+    case 39:  // Right pressed so scroll right
+      if (end === 100)
         break;
 
-      case 37:  // Left pressed so scroll left
-        if (start <= 0)
-          break;
+      lineChart.dispatchAction({
+        type: 'dataZoom',
+        start: ++start,
+        end: ++end
+      });
+      break;
 
-        lineChart.dispatchAction({
-          type: 'dataZoom',
-          start: --start,
-          end: --end
-        });
+    case 37:  // Left pressed so scroll left
+      if (start <= 0)
         break;
 
-      case 38:  // Up pressed so zoom in
-        if (start === end)
-          break;
+      lineChart.dispatchAction({
+        type: 'dataZoom',
+        start: --start,
+        end: --end
+      });
+      break;
 
-        lineChart.dispatchAction({
-          type: 'dataZoom',
-          start: ++start,
-          end: --end
-        });
+    case 38:  // Up pressed so zoom in
+      if (start === end)
         break;
 
-      case 40:  // Down pressed so zoom out
-        if (start > 0)
-          start--;
+      lineChart.dispatchAction({
+        type: 'dataZoom',
+        start: ++start,
+        end: --end
+      });
+      break;
 
-        if (end < 100)
-          end++;
+    case 40:  // Down pressed so zoom out
+      if (start > 0)
+        start--;
 
-        // The chart is fully zoomed out so don't attempt
-        // to zoom any further
-        if (start === 0 && end === 100)
-          break;
+      if (end < 100)
+        end++;
 
-        lineChart.dispatchAction({
-          type: 'dataZoom',
-          start: start,
-          end: end
-        });
+      // The chart is fully zoomed out so don't attempt
+      // to zoom any further
+      if (start === 0 && end === 100)
         break;
-    }
-  });
-});
+
+      lineChart.dispatchAction({
+        type: 'dataZoom',
+        start: start,
+        end: end
+      });
+      break;
+  }
+};

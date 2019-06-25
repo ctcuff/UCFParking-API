@@ -4,15 +4,8 @@ const API_MONTH = 'https://ucf-garages.herokuapp.com/data/month';
 const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
 
 (function () {
-  const $navToday = $('#nav-today');
-  const $navMonth = $('#nav-current-month');
-  const $navAll = $('#nav-all');
   const $inputDate = $('#date-picker');
-  const $dropdownTitleWeek = $('#span-week');
-  const $dropdownTitleMonth = $('#span-month');
-  const $dropDownItemsWeek = $('#nav-dropdown-items-week');
-  const $dropDownItemsMonth = $('#nav-dropdown-items-month');
-  const $navItems = $('#nav-list-items');
+  const navItems = document.getElementById('nav-list-items').children;
   const today = moment();
   const firstDate = moment('2019-01-02T03:00:49.044984');
   const months = [
@@ -25,28 +18,31 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
   // the database is indexed at 0.
   const numWeeks = Number.parseInt(today.format('w')) - 1;
 
-  $('#view-current-week').click(function () {
-    setActive($(this).closest('li'));
-    $dropdownTitleWeek.text('This week');
+  document.getElementById('view-current-week').onclick = ({ target }) => {
+    setActive(target.closest('li'));
     initLineChart(API_WEEK);
-  });
+    document.getElementById('span-week').innerText = 'This week';
+  };
 
   // Add weeks 1 through the current week to the nav drop down
   for (let i = 0; i <= numWeeks; i++) {
-    const beginDate = firstDate.format('MMM DD');
+    const startDate = firstDate.format('MMM DD');
     // The first week has to be treated differently since it starts on Wednesday
     const endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
 
-    const $child = $(`<span class="dropdown-item pointer" id="week-${i + 1}"></span>`);
-    $child.html(`Week ${i + 1} <small>${beginDate} - ${endDate}</small>`);
+    const span = document.createElement('span');
 
-    $child.click(function () {
-      setActive($(this).closest('li'));
-      $dropdownTitleWeek.text(`Week ${i + 1}`);
+    span.classList.add('dropdown-item', 'pointer');
+    span.setAttribute('id', `week-${i + 1}`);
+    span.innerHTML = `Week ${i + 1} <small>${startDate} - ${endDate}</small>`;
+
+    span.onclick = ({ target }) => {
+      setActive(target.closest('li'));
       initLineChart(`${API_WEEK}/${i}`);
-    });
-    $dropDownItemsWeek.append($child);
+      document.getElementById('span-week').innerText = `Week ${i + 1}`;
+    };
 
+    document.getElementById('nav-dropdown-items-week').appendChild(span);
     firstDate.add({ days: 1 });
   }
 
@@ -54,49 +50,42 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
   // moment().month() returns 0 for January but the database is
   // indexed at 1 so 1 is added
   for (let i = 0; i < today.month() + 1; i++) {
-    const $child = $(`<span class="dropdown-item pointer" id="month-${i + 1}">${months[i]}</span>`);
+    const span = document.createElement('span');
+    span.classList.add('dropdown-item', 'pointer');
+    span.setAttribute('id', `month-${i + 1}`);
+    span.innerText = months[i];
 
-    $child.click(function () {
-      setActive($(this).closest('li'));
-      $dropdownTitleMonth.text(months[i]);
-      initLineChart(`${API_MONTH}/${i + 1}`)
-    });
-    $dropDownItemsMonth.append($child);
+    span.onclick = ({ target }) => {
+      setActive(target.closest('li'));
+      initLineChart(`${API_MONTH}/${i + 1}`);
+      document.getElementById('span-month').innerText = months[i];
+    };
+
+    document.getElementById('nav-dropdown-items-month').appendChild(span);
   }
 
-  $navToday.click(function () {
-    setActive(this);
+  document.getElementById('toggle-tooltip').onclick = () => toggleTooltip();
+  document.getElementById('toggle-slider').onclick = () => toggleSlider();
+  document.getElementById('toggle-fill').onclick = () => toggleFill();
+
+  document.getElementById('nav-today').onclick = ({ target }) => {
+    setActive(target.closest('li'));
     initLineChart(API_TODAY);
-  });
+  };
 
-  $navMonth.click(function () {
-    setActive(this);
-    initLineChart(API_MONTH);
-  });
-
-  $navAll.click(function () {
-    setActive(this);
+  document.getElementById('nav-all').onclick = ({ target }) => {
+    setActive(target.closest('li'));
     initLineChart(API_ALL);
-  });
+  };
 
-  $('#toggle-fill').click(() => {
-    toggleFill();
-  });
-
-  $('#toggle-visibility').click(function () {
+  document.getElementById('toggle-visibility').onclick = ({ target }) => {
     toggleVisible();
-    $(this).text(window.showAllLines ? 'Hide all' : 'Show all');
-  });
+    target.innerText = window.showAllLines ? 'Hide all' : 'Show all';
+  };
 
-  $('#toggle-tooltip').click(() => {
-    toggleTooltip();
+  $inputDate.click(function () {
+    $(this).tooltip('hide')
   });
-
-  $('#toggle-slider').click(() => {
-    toggleSlider();
-  });
-
-  $inputDate.click(function () { $(this).tooltip('hide') });
 
   $inputDate.datepicker({
     autoclose: true,
@@ -104,8 +93,10 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
     startDate: '1/2/2019',
     endDate: today.format('M/D/YYYY')
   }).on('changeDate', event => {
-    for (const child of $navItems.children())
-      $(child).removeClass('active');
+
+    Array.prototype.forEach.call(navItems, item => {
+      item.classList.remove('active');
+    });
 
     $('.navbar-collapse').collapse('hide');
 
@@ -119,20 +110,14 @@ const API_ALL = 'https://ucf-garages.herokuapp.com/data/all';
   // Sets the selected nav bar item as active and removes
   // the active property from the rest of the nav bar items
   function setActive(element) {
-    const $element = $(element);
-    // Don't reload the chart if this nav section
-    // is already active
-    if ($element.hasClass('active'))
-      return;
+    element.classList.add('active');
 
-    $element.addClass('active');
-
-    for (const child of $navItems.children()) {
-      const $child = $(child);
-      if ($child.attr('id') !== $element.attr('id')) {
-        $child.removeClass('active');
+    Array.prototype.forEach.call(navItems, item => {
+      if (item !== element) {
+        item.classList.remove('active');
       }
-    }
+    });
+
     // Makes sure the date picker's value resets to the current
     // day when it's not selected
     $inputDate.datepicker('update', today.format('M/D/YYYY'));
