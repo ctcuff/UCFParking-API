@@ -101,7 +101,7 @@ def add():
         day=date.day,
         week=int(date.strftime('%U')),
         month=date.month,
-        garage_data=[
+        garages=[
             GarageEntry(
                 max_spaces=entry['max_spaces'],
                 name=entry['name'],

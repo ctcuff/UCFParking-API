@@ -32,14 +32,14 @@ class GarageEntry(EmbeddedDocument):
 
 class Garage(Document):
     # Specifies the cluster name
-    meta = {'collection': 'garage_data'}
+    meta = {'collection': 'ucf_garages'}
 
     date = StringField(required=True, unique=True)
     timestamp = LongField(required=True, unique=True)
     day = IntField(required=True, min_value=1, max_value=31)
     week = IntField(required=True, min_value=0, max_value=52)
     month = IntField(required=True, min_value=1, max_value=12)
-    garage_data = ListField(EmbeddedDocumentField(GarageEntry), required=True)
+    garages = ListField(EmbeddedDocumentField(GarageEntry), required=True)
 
     def clean(self):
         garages_used = set(_GARAGES)
@@ -50,13 +50,13 @@ class Garage(Document):
         except (TypeError, ValueError, OverflowError) as e:
             raise ValidationError(f"Couldn't parse date: {e.args[0]}")
 
-        if len(self.garage_data) != 7:
+        if len(self.garages) != 7:
             raise ValidationError(
-                f'Expected an array of length 7 but got an array of length {len(self.garage_data)}'
+                f'Expected an array of length 7 but got an array of length {len(self.garages)}'
             )
 
         # Make sure each garage is entered exactly once
-        for entry in self.garage_data:
+        for entry in self.garages:
             try:
                 garages_used.remove(entry.name)
             except KeyError:
