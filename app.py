@@ -1,28 +1,30 @@
-import json
 import traceback
+import json
+from threading import Thread
 import dropbox
 from dropbox.files import WriteMode
-from requests import get
 from flask import Flask, jsonify, request
+from config import DATABASE_CONFIG, SERVER_CONFIG
+from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
-from datetime import datetime
-from sqlalchemy import and_
-from flask_cors import CORS
-from config import DATABASE_URL, KEY, DBOX_TOKEN
-from models import *
+from requests import get
 from email_helper import send_email
-from threading import Thread
+from mongoengine import connect
+from flask_cors import CORS
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-
-CORS(app)
-db.init_app(app)
-
-dbx = dropbox.Dropbox(DBOX_TOKEN)
 SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
+dbx = dropbox.Dropbox(SERVER_CONFIG['DBOX_TOKEN'])
+CORS(app)
+connect(
+    db=DATABASE_CONFIG['TABLE_NAME'],
+    username=DATABASE_CONFIG['USERNAME'],
+    password=DATABASE_CONFIG['PASSWORD'],
+    host=DATABASE_CONFIG['HOST'],
+    alias='default'
+)
 
 
 def jsonify_error(msg):
@@ -65,42 +67,57 @@ def api():
             'percent_full': percent_full,
         })
 
-    if len(garage_data['garages']) == 0:
+    if len(garage_data['garages']) != 7:
         send_email(
-            f'No garage data was found. '
+            f'Invalid data length. '
             f'Check {SCRAPE_URL} to see if the website has changed or is no longer running'
         )
 
     return jsonify(garage_data)
 
 
-# noinspection PyBroadException
 @app.route('/add')
 def add():
     header_key = request.headers.get('key')
-    # Make sure normal users can add data to the database
-    if header_key != KEY:
+
+    # Make sure normal users can't add data to the database
+    if header_key != SERVER_CONFIG['KEY']:
         return jsonify_error('Missing or invalid key')
 
-    garage_data = get('https://ucf-garages.herokuapp.com/api')
     date = datetime.now()
+    garage_data = api().json
+
+    if 'error' in garage_data:
+        send_email(
+            "Garage data was not available. This was probably because the site was down. "
+            "Check to see if UCF's parking site is up."
+        )
+        return
+
+    # noinspection PyTypeChecker
     garage = Garage(
-        date=str(date.isoformat()),
-        garage_data=json.loads(garage_data.text),
-        month=date.month,
+        date=date.isoformat(),
+        timestamp=int(date.timestamp()),
         day=date.day,
-        week=int(datetime.now().strftime('%U'))
+        week=int(date.strftime('%U')),
+        month=date.month,
+        garage_data=[
+            GarageEntry(
+                max_spaces=entry['max_spaces'],
+                name=entry['name'],
+                percent_full=entry['percent_full'],
+                spaces_filled=entry['spaces_filled'],
+                spaces_left=entry['spaces_left']
+            ) for entry in garage_data['garages']
+        ]
     )
 
     try:
-        db.session.add(garage)
-        db.session.commit()
+        garage.save()
     except Exception as e:
         send_email(f'An error occurred in add(): {traceback.format_exc()}')
         return jsonify_error(f'Failed to add data: {str(e)}')
 
-    # Upload the data on a separate thread so the
-    # main thread doesn't have to wait
     upload = Thread(target=upload_backup)
     upload.start()
 
@@ -109,10 +126,17 @@ def add():
 
 @app.route('/data/all')
 def get_all_data():
-    return query_data(
-        Garage.query
-            .order_by(Garage.id.asc())
-            .all()
+    return query_database(
+        Garage.objects(),
+        request.args.get('sort')
+    )
+
+
+@app.route('/data/month/<int:month>/day/<int:day>')
+def get_data_at_day(month, day):
+    return query_database(
+        Garage.objects(day=day, month=month),
+        request.args.get('sort')
     )
 
 
@@ -122,50 +146,30 @@ def get_data_for_today():
     return get_data_at_day(today.month, today.day)
 
 
-@app.route('/data/week')
-def get_current_week():
-    return get_data_at_week(int(datetime.now().strftime('%U')))
-
-
 @app.route('/data/week/<int:week>')
 def get_data_at_week(week):
-    return query_data(
-        Garage.query
-            .filter_by(week=week)
-            .order_by(Garage.id.asc())
-            .all()
+    return query_database(
+        Garage.objects(week=week),
+        request.args.get('sort')
+    )
+
+
+@app.route('/data/week')
+def get_current_week():
+    return get_data_at_week(datetime.now().strftime('%U'))
+
+
+@app.route('/data/month/<int:month>')
+def get_data_at_month(month):
+    return query_database(
+        Garage.objects(month=month),
+        request.args.get('sort')
     )
 
 
 @app.route('/data/month')
 def get_current_month():
-    month = datetime.now().month
-    return query_data(
-        Garage.query
-            .filter_by(month=month)
-            .order_by(Garage.id.asc())
-            .all()
-    )
-
-
-@app.route('/data/month/<int:month>')
-def get_data_at_month(month):
-    return query_data(
-        Garage.query
-            .filter_by(month=month)
-            .order_by(Garage.id.asc())
-            .all()
-    )
-
-
-@app.route('/data/month/<int:month>/day/<int:day>')
-def get_data_at_day(month, day):
-    return query_data(
-        Garage.query
-            .filter(and_(Garage.month == month, Garage.day == day))
-            .order_by(Garage.id.asc())
-            .all()
-    )
+    return get_data_at_month(datetime.now().month)
 
 
 @app.errorhandler(404)
@@ -174,9 +178,9 @@ def error404(err):
 
 
 @app.errorhandler(408)
-def error408():
+def error408(err):
     send_email(
-        'Request timed out. '
+        f'Request timed out. '
         f'Check {SCRAPE_URL} to see if the connection is just slow.'
     )
     return jsonify_error('Request timed out')
@@ -188,30 +192,34 @@ def error500(err):
     return jsonify_error('Internal server error')
 
 
-def query_data(query):
-    data = {
-        'data': [
-            {
-                'id': garage.id,
-                'date': garage.date,
-                'month': garage.month,
-                'day': garage.day,
-                'garages': garage.garage_data['garages'],
-                'week': garage.week
-            } for garage in query
-        ]
+def query_database(objects, sort):
+    sort_order = {
+        'asc': 'timestamp',
+        'ascending': 'timestamp',
+        'desc': '-timestamp',
+        'descending': '-timestamp',
     }
-    return jsonify(data)
+
+    if sort not in sort_order:
+        sort = 'asc'
+
+    data = objects.order_by('timestamp', sort_order[sort]).exclude('id')
+
+    return jsonify({
+        'count': data.count(),
+        'data': json.loads(data.to_json())
+    })
 
 
-# noinspection PyBroadException
 def upload_backup():
     """
     Saves a backup of all json to Dropbox
     """
+
+    # noinspection PyBroadException
     try:
         resp = get('https://ucf-garages.herokuapp.com/data/all')
-        content = json.dumps(resp.json(), indent=3)
+        content = json.dumps(resp.json(), indent=2)
 
         status = dbx.files_upload(
             bytes(content, encoding='utf8'),
