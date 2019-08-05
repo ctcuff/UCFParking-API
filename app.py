@@ -216,21 +216,25 @@ def upload_backup():
     Saves a backup of all json to Dropbox
     """
 
-    # noinspection PyBroadException
-    try:
-        resp = get('https://ucf-garages.herokuapp.com/data/all')
-        content = json.dumps(resp.json(), indent=2)
+    with app.test_request_context():
+        # noinspection PyBroadException
+        try:
+            resp = get_all_data()
+            content = json.dumps(resp.json, indent=2)
 
-        status = dbx.files_upload(
-            bytes(content, encoding='utf8'),
-            '/ucf-garage-backup/data_backup.json',
-            mode=WriteMode('overwrite')
-        )
+            file = dbx.files_upload(
+                bytes(content, encoding='utf8'),
+                '/ucf-garage-backup/data_backup.json',
+                mode=WriteMode.overwrite
+            )
 
-        print(status)
+            print(
+                f'[{datetime.now().strftime("%a %B %d %Y %I:%M %p")}] '
+                f'{file.path_display} saved successfully.'
+            )
 
-    except Exception:
-        send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
+        except Exception:
+            send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
 
 
 if __name__ == '__main__':
