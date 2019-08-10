@@ -81,6 +81,7 @@
           <img id="calendar-icon" src="../assets/calendar.svg" alt="" />
           <datetime
               v-model="selectedDate"
+              :auto="true"
               :min-datetime="startDate"
               :max-datetime="new Date().toISOString()"
           />
