@@ -99,8 +99,15 @@
           legend: {
             type: 'plain',
             padding: [15, 5, 5, 5],
-            // WARN: This might not work in all browsers
-            selected: Object.fromEntries(lineNames.map(name => ([name, true]))),
+            selected: {
+              A: true,
+              B: true,
+              C: true,
+              D: true,
+              H: true,
+              I: true,
+              Libra: true
+            },
           },
           dataZoom: [
             {
@@ -127,22 +134,27 @@
         switch (option) {
           case events.TOGGLE_VISIBILITY:
             chartOptions.showAllLines = !chartOptions.showAllLines;
+
             Object.keys(lineChart.legend.selected).forEach(key => {
               lineChart.legend.selected[key] = chartOptions.showAllLines;
             });
             break;
+
           case events.TOGGLE_FILL:
             chartOptions.fill = !chartOptions.fill;
             const { fill, defaultLineWidth, thinLine } = chartOptions;
+
             lineChart.series.forEach(line => {
               line.areaStyle = fill ? {} : null;
               line.lineStyle.width = fill ? thinLine : defaultLineWidth;
             });
             break;
+
           case events.TOGGLE_TOOLTIP:
             chartOptions.showTooltip = !chartOptions.showTooltip;
             lineChart.tooltip.showContent = chartOptions.showTooltip;
             break;
+
           case events.TOGGLE_SLIDER:
             chartOptions.showSlider = !chartOptions.showSlider;
             const { showSlider } = chartOptions;
@@ -190,7 +202,7 @@
             lineStyle: {
               // A thinner line looks better when the area under
               // the line is filled in or when there are more than 24 points
-              width: this.isMobile ? thinLine : (resp.count >= 24 ? thinLine : defaultLineWidth),
+              width: this.isMobile ? thinLine : (resp.count > 24 ? thinLine : defaultLineWidth),
             },
             areaStyle: null
           });

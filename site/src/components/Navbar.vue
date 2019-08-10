@@ -68,7 +68,11 @@
             All
           </b-nav-item>
           <b-nav-item-dropdown text="Options">
-            <b-dropdown-item v-for="(option, index) in options" :key="index" @click="option.action">
+            <b-dropdown-item
+                v-for="(option, index) in options"
+                :key="index"
+                @click="option.action"
+            >
               {{ option.text }}
             </b-dropdown-item>
           </b-nav-item-dropdown>
@@ -167,6 +171,7 @@
   };
 </script>
 
+<!--suppress CssInvalidPseudoSelector -->
 <style lang="scss" scoped>
   * {
     user-select: none;
