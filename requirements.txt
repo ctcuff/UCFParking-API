@@ -1,0 +1,9 @@
+requests==2.22.0
+Flask_Cors==3.0.7
+Flask==1.0.2
+gunicorn==19.8.1
+mongoengine==0.18.2
+pymongo[tls,srv]==3.8.0
+beautifulsoup4==4.8.0
+python_dateutil==2.8.0
+dropbox==9.3.0
