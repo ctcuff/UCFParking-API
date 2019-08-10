@@ -14,6 +14,7 @@
     "echarts": "^4.2.1",
     "luxon": "^1.17.2",
     "moment": "^2.24.0",
+    "prettier": "^1.18.2",
     "vue": "^2.6.10",
     "vue-datetime": "^1.0.0-beta.10",
     "vue-echarts": "^4.0.3",
@@ -27,9 +28,22 @@
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "node-sass": "^4.12.0",
-    "prettier": "^1.18.2",
     "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
   },
   "postcss": {
     "plugins": {
