@@ -5,10 +5,9 @@
 </template>
 
 <script>
-  import Vue from 'vue';
   import eventBus, { events } from '@/util/eventBus';
-  import ECharts from 'vue-echarts';
-  import moment from 'moment';
+  import ECharts from 'vue-echarts/components/ECharts.vue';
+  import moment from 'moment/src/moment';
   import '@/util/connect';
   import 'echarts/lib/chart/line';
   import 'echarts/lib/chart/line';
@@ -16,8 +15,6 @@
   import 'echarts/lib/component/title';
   import 'echarts/lib/component/dataZoom';
   import 'echarts/lib/component/legend';
-
-  Vue.component('v-chart', ECharts);
 
   const chartOptions = {
     showAllLines: true,

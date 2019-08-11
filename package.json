@@ -1,9 +1,11 @@
 {
   "name": "ucf-parking-web",
+  "description": "Show how full each parking garage at UCF was at every hour of every day",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "serve-production": "serve -d dist",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
@@ -14,7 +16,6 @@
     "echarts": "^4.2.1",
     "luxon": "^1.17.2",
     "moment": "^2.24.0",
-    "prettier": "^1.18.2",
     "vue": "^2.6.10",
     "vue-datetime": "^1.0.0-beta.10",
     "vue-echarts": "^4.0.3",
@@ -28,8 +29,11 @@
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
     "node-sass": "^4.12.0",
+    "prettier": "^1.18.2",
     "sass-loader": "^7.1.0",
-    "vue-template-compiler": "^2.6.10"
+    "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.28.4",
+    "webpack-bundle-analyzer": "^3.4.1"
   },
   "postcss": {
     "plugins": {
@@ -39,5 +43,8 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "repository": {
+    "url": "https://github.com/ctcuff/UCFParking-Web"
+  }
 }

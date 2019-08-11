@@ -84,6 +84,7 @@
         </b-navbar-nav>
         <div class="datepicker-wrapper">
           <img
+              title="View specific date"
               id="calendar-icon"
               src="../assets/calendar.svg"
               alt=""
@@ -104,14 +105,34 @@
 
 <script>
   import eventBus, { events } from '@/util/eventBus';
-  import moment from 'moment';
-  import Vue from 'vue';
-  import Datetime from 'vue-datetime';
+  import moment from 'moment/src/moment';
+  import { Datetime } from 'vue-datetime';
+  import {
+    BNavbar,
+    BNavbarToggle,
+    BNavbarBrand,
+    BCollapse,
+    BNavbarNav,
+    BNavItem,
+    BNavItemDropdown,
+    BDropdownItem,
+    BDropdownDivider
+  } from 'bootstrap-vue';
   import 'vue-datetime/dist/vue-datetime.css';
 
-  Vue.use(Datetime);
-
   export default {
+    components: {
+      'b-navbar': BNavbar,
+      'b-navbar-toggle': BNavbarToggle,
+      'b-navbar-brand': BNavbarBrand,
+      'b-collapse': BCollapse,
+      'b-navbar-nav': BNavbarNav,
+      'b-nav-item': BNavItem,
+      'b-nav-item-dropdown': BNavItemDropdown,
+      'b-dropdown-item': BDropdownItem,
+      'b-dropdown-divider': BDropdownDivider,
+      'datetime': Datetime
+    },
     data: function () {
       // The first date in the garages database
       const startDate = '2019-01-02T08:00:49.000Z';
@@ -176,7 +197,7 @@
       emitLoad: function (route) {
         eventBus.$emit(events.LOAD_CHART_DATA, route);
       },
-      openDatepicker: function() {
+      openDatepicker: function () {
         document.getElementById('datetime-input').click();
       }
     }
@@ -262,6 +283,7 @@
       margin: 10px 0;
     }
   }
+
   ::v-deep .vdatetime-popup__actions__button--confirm {
     display: none;
   }

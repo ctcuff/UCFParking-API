@@ -1,7 +1,9 @@
 <template>
   <div id="overlay" v-if="isLoading">
     <div id="center">
-      <b-progress :value="progress" :max="100" variant="dark" animated />
+      <b-progress :value="progress" :max="100" variant="dark" animated>
+        Loading
+      </b-progress>
       <b-button id="cancel" @click="cancelLoad">Cancel</b-button>
     </div>
   </div>
@@ -9,8 +11,13 @@
 
 <script>
   import eventBus, { events } from '@/util/eventBus';
+  import { BProgress, BButton } from 'bootstrap-vue';
 
   export default {
+    components: {
+      'b-progress': BProgress,
+      'b-button': BButton
+    },
     data: function () {
       return {
         isLoading: false,
