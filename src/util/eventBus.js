@@ -14,7 +14,9 @@ const events = {
   LOAD_CHART_DATA: 'loadChartData',
   LOAD_STARTED: 'onLoad',
   LOAD_FINISHED: 'onLoadFinished',
-  CHART_DATA_LOADED: 'onChartDataLoaded'
+  CHART_DATA_LOADED: 'onChartDataLoaded',
+  PROGRESS_UPDATE: 'onProgressUpdate',
+  CANCEL_LOAD: 'cancelLoad'
 };
 
 export { eventBus as default, events };

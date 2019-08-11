@@ -1,7 +1,8 @@
 <template>
   <div id="overlay" v-if="isLoading">
     <div id="center">
-      <b-spinner label="Spinning" id="spinner"></b-spinner>
+      <b-progress :value="progress" :max="100" variant="dark" animated />
+      <b-button id="cancel" @click="cancelLoad">Cancel</b-button>
     </div>
   </div>
 </template>
@@ -12,13 +13,23 @@
   export default {
     data: function () {
       return {
-        isLoading: false
+        isLoading: false,
+        progress: 0
       };
     },
     created: function () {
       const self = this;
-      eventBus.$on(events.LOAD_STARTED, () => (self.isLoading = true));
+      eventBus.$on(events.LOAD_STARTED, () => {
+        self.progress = 0;
+        self.isLoading = true;
+      });
       eventBus.$on(events.LOAD_FINISHED, () => (self.isLoading = false));
+      eventBus.$on(events.PROGRESS_UPDATE, progress => (self.progress = progress));
+    },
+    methods: {
+      cancelLoad: function () {
+        eventBus.$emit(events.CANCEL_LOAD);
+      }
     }
   };
 </script>
@@ -36,12 +47,19 @@
   #center {
     height: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
   }
 
-  #spinner {
-    width: 3rem;
-    height: 3rem;
+  #cancel {
+    position: absolute;
+    top: 56%;
+    background-color: #1a1d20;
+  }
+
+  .progress {
+    width: 80%;
+    height: 9px;
   }
 </style>
