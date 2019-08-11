@@ -262,4 +262,7 @@
       margin: 10px 0;
     }
   }
+  ::v-deep .vdatetime-popup__actions__button--confirm {
+    display: none;
+  }
 </style>
