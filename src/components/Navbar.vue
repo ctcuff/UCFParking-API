@@ -1,7 +1,12 @@
 <template>
   <div class="hello">
     <b-navbar type="dark" variant="dark" toggleable="lg">
-      <span href="#" id="github-icon" class="fa fa-github"></span>
+      <a
+          href="https://github.com/ctcuff/UCFParking-Web"
+          target="_blank"
+          title="View source on GitHub"
+          id="github-icon"
+          class="fa fa-github"></a>
       <b-navbar-brand>Garage Data</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse is-nav id="nav-collapse">
@@ -78,8 +83,14 @@
           </b-nav-item-dropdown>
         </b-navbar-nav>
         <div class="datepicker-wrapper">
-          <img id="calendar-icon" src="../assets/calendar.svg" alt="" />
+          <img
+              id="calendar-icon"
+              src="../assets/calendar.svg"
+              alt=""
+              @click="openDatepicker"
+          />
           <datetime
+              input-id="datetime-input"
               v-model="selectedDate"
               :auto="true"
               :min-datetime="startDate"
@@ -104,11 +115,11 @@
     data: function () {
       // The first date in the garages database
       const startDate = '2019-01-02T08:00:49.000Z';
-      const weeks = [];
-      const months = [];
       const today = moment();
+      const weeks = [];
+      const months = moment.months().slice(0, today.month() + 1);
       const numWeeks = parseInt(today.format('w')) - 1;
-      const firstDate = moment(startDate.slice());
+      const firstDate = moment(startDate);
 
       for (let i = 0; i <= numWeeks; i++) {
         const startDate = firstDate.format('MMM DD');
@@ -121,9 +132,6 @@
         firstDate.add({ days: 1 });
       }
 
-      for (let i = 0; i < today.month() + 1; i++) {
-        months.push(moment.months()[i]);
-      }
       return {
         startDate: startDate,
         selectedDate: new Date().toISOString(),
@@ -132,7 +140,7 @@
         activeNavItem: 'today',
         options: (() => [
           {
-            text: 'Hide all',
+            text: 'Toggle all lines',
             action: () => eventBus.$emit(events.OPTION_CHANGE, { option: events.TOGGLE_VISIBILITY })
           },
           {
@@ -167,6 +175,9 @@
     methods: {
       emitLoad: function (route) {
         eventBus.$emit(events.LOAD_CHART_DATA, route);
+      },
+      openDatepicker: function() {
+        document.getElementById('datetime-input').click();
       }
     }
   };
@@ -182,6 +193,7 @@
     font-size: 34px;
     color: white;
     margin-right: 16px;
+    text-decoration: none;
   }
 
   ::v-deep .nav-active a:not(.dropdown-item), span:not(.date-range) {
@@ -216,6 +228,12 @@
       height: auto;
       max-height: 400px;
       overflow-x: hidden;
+
+      @media screen and (max-width: 991px) {
+        height: auto;
+        max-height: 200px;
+        overflow-x: hidden;
+      }
     }
 
     ::-webkit-scrollbar {
@@ -238,15 +256,10 @@
   .datepicker-wrapper {
     display: flex;
     align-items: center;
-  }
+    cursor: pointer;
 
-  @media screen and (max-width: 900px) {
-    ::v-deep .scrollable-menu {
-      ul {
-        height: auto;
-        max-height: 200px;
-        overflow-x: hidden;
-      }
+    @media screen and (max-width: 991px) {
+      margin: 10px 0;
     }
   }
 </style>

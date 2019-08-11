@@ -184,8 +184,9 @@
         const lineData = [];
 
         resp.data.forEach(entry => {
-          labels.original.push(moment(entry.date).format('MM/DD/YY'));
-          labels.formatted.push(moment(entry.date).format('ddd MMM D - h A'));
+          const date = moment(entry.date);
+          labels.original.push(date.format('MM/DD/YY'));
+          labels.formatted.push(date.format('ddd MMM D - h A'));
           entry.garages.forEach((garage, index) => {
             points[index].push(Math.floor(Math.round(garage.percent_full)));
           });
