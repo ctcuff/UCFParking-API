@@ -4,7 +4,7 @@ This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](
 How exactly is this useful you ask? Well, making a request to the `/api` route returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/data/all` route returns a JSON response with info about how full each garage was from January to the current date (<b>BEWARE</b>, this will return a lot of JSON as each hour passes). The list is updated at the top of every hour every day. To view a specific date, make a request to `/data/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, [`https://ucf-garages.herokuapp.com/data/month/1/day/2`](https://ucf-garages.herokuapp.com/data/month/1/day/2) returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this: `{ "data": [] }`
 
 # How does it work?
-Heroku scheduler is a Heroku addon that can run a command at set intervals. Every hour, Heroku runs the `curl` command to the `/add` route (which requires a key) which scrapes UCF's parking site, extracts the garage info, and saves it to a PostgreSQL database. The `/add` route requires a key to prevent a regular user from making a request and adding data outside of that hourly interval. The table looks something like this (the values aren't exact):
+Heroku scheduler is a Heroku addon that can run a command at set intervals. Every hour, Heroku runs the `curl` command to the `/add` route (which requires a key) which scrapes UCF's parking site, extracts the garage info, and saves it to a MongoDB database. The `/add` route requires a key to prevent a regular user from making a request and adding data outside of that hourly interval. The table looks something like this (the values aren't exact):
 
 Date                       |id  |garage_data                                              |month  |week |day
 ---------------------------|----|---------------------------------------------------------|-------|-----|---
@@ -15,23 +15,34 @@ Date                       |id  |garage_data                                    
 
 
 ### Sidenote
-`config.py` contains a few import things: The url of the PostgreSQL database, the key needed to acces the `/add` route, a few credentials used by `email_helper.py`, and an api key for uploading a backup of the json data to Dropbox. `email_helper.py` contains a helper function used by `app.py` that sends an email to `TO` if something goes wrong. This is useful because you don't have to check the app everyday to make sure it's running. Although, if you don't want this feature, just remove the `send_email()` function from `app.py`. The email contains an error log and stacktrace. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). You'll also need an email address, port, and host of whatever email service you use (I'd highly recommend using gmail since this project already uses it). Once you've done that, create a `config.py` file that looks something like like this:
+`config.py` contains a few import things: The url of the MongoDB database, the key needed to acces the `/add` route, a few credentials used by `email_helper.py`, and an api key for uploading a backup of the json data to Dropbox. `email_helper.py` contains a helper function used by `app.py` that sends an email to `TO` if something goes wrong. This is useful because you don't have to check the app everyday to make sure it's running. Although, if you don't want this feature, just remove the `send_email()` function from `app.py`. The email contains an error log and stacktrace. If you want to build this yourself, you'll need to set up the database and generate a random key, something like `c52452a7-4f68-4033-a40b-31ec188e5c30` (if you want to prevent regular access the the `/add` route). You'll also need an email address, port, and host of whatever email service you use (I'd highly recommend using gmail since this project already uses it). Once you've done that, create a `config.py` file that looks something like like this:
 ```python
-DATABASE_URL = 'postgres://some-awesome-url-here'
-# This will be some random key you'll generate.
-# Don't use this specific value. I'd recommend using uuid4() from the uuid lib.
-KEY = 'c52452a7-4f68-4033-a40b-31ec188e5c30'
-FROM = 'from.someone@gmail.com'
-TO = 'to.someone@gmail.com'
-# This isn't the password for the actuall email address, it's a password for an app
-# See: https://support.google.com/accounts/answer/185833?hl=en
-PASSWORD = '16-digit-app-password-here'
-# This will be the host / port for the email service used. Again, I'd recommend using gmail
-HOST = 'smtp.gmail.com'
-PORT = 587
-# You'll get this key after creating a Dropbox app. This is used to save a backup of all
-# json data every hour
-DBOX_TOKEN = 'your-token-here'
+DATABASE_CONFIG = {
+    'TABLE_NAME': 'table_name_here',
+    'USERNAME': 'username',
+    'PASSWORD': 'db_password',
+    'HOST': 'mongodb+srv://cluster-blah-blah-blah'
+}
+
+EMAIL_CONFIG = {
+    'FROM': 'from.someone@gmail.com',
+    'TO': 'to.someone@gmail.com',
+    # This isn't the password for the actuall email address, it's a password 
+    # for an app. See: https://support.google.com/accounts/answer/185833?hl=en
+    'PASSWORD': '16-digit-app-password-here',
+    # This will be the host / port for the email service used. 
+    # Again, I'd recommend using gmail since I used it in this project
+    'HOST': 'smtp.gmail.com',
+    'PORT': 587
+}
+
+SERVER_CONFIG = {
+    # I'd recommend using uuid4() from the uuid lib.
+    'KEY': 'random-key here',
+    # You'll get this key after creating a Dropbox app.
+    # See: https://www.dropbox.com/developers/documentation/python#tutorial
+    'DBOX_TOKEN': 'your-token-here'
+}
 ```
 
 ### Sidenote part 2 (the sequel)
@@ -58,6 +69,11 @@ This code in this repo is actually 2 projects merged into one. The api is hosted
    * The range for `{month}` is 1 - 12
 * `/data/month/{month}/day/{day}`
    * For example: [`/data/month/1/day/3`](https://ucf-garages.herokuapp.com/data/month/1/day/3)
+   
+### Query parameters
+* `sort`
+  * Possible values: `asc`, `ascending`, `desc`, `descending`. The default sort order is `ascending`.
+  * For example: `https://ucf-garages.herokuapp.com/data/week?sort=asc`
 
 ### Example request to /api
 Using Python 3.x
@@ -129,6 +145,7 @@ Using Python 3.x
 >>> res = get('https://ucf-garages.herokuapp.com/data/month/1/day/2')
 >>> dumps(res.json(), indent=3)
 {
+   "count": 21,
    "data": [
    {
       "date": "2019-01-02T03:00:49.044984",
@@ -186,6 +203,7 @@ Using Python 3.x
         ],
          "id": 4,
          "month": 1,
+         "timestamp": 1546488063,
          "week": 0
       }
    ]
