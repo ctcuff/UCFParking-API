@@ -15,7 +15,6 @@ const events = {
   LOAD_STARTED: 'onLoad',
   LOAD_FINISHED: 'onLoadFinished',
   CHART_DATA_LOADED: 'onChartDataLoaded',
-  PROGRESS_UPDATE: 'onProgressUpdate',
   CANCEL_LOAD: 'cancelLoad'
 };
 

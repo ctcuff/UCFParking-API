@@ -1,35 +1,31 @@
 <template>
   <div id="overlay" v-if="isLoading">
     <div id="center">
-      <b-progress :value="progress" :max="100" variant="dark" animated>
-        Loading
-      </b-progress>
-      <b-button id="cancel" @click="cancelLoad">Cancel</b-button>
+      <b-spinner label="Spinning" id=spinner></b-spinner>
+      <b-button id="cancel" @click="cancelLoad">
+        Cancel
+      </b-button>
     </div>
   </div>
 </template>
 
 <script>
   import eventBus, { events } from '@/util/eventBus';
-  import { BProgress, BButton } from 'bootstrap-vue';
+  import { BSpinner, BButton } from 'bootstrap-vue';
 
   export default {
     components: {
-      'b-progress': BProgress,
+      'b-spinner': BSpinner,
       'b-button': BButton
     },
     data: function () {
       return {
-        isLoading: false,
-        progress: 0
+        isLoading: false 
       };
     },
     created: function () {
       const self = this;
-      eventBus.$on(events.LOAD_STARTED, () => {
-        self.progress = 0;
-        self.isLoading = true;
-      });
+      eventBus.$on(events.LOAD_STARTED, () => (self.isLoading = true));
       eventBus.$on(events.LOAD_FINISHED, () => (self.isLoading = false));
       eventBus.$on(events.PROGRESS_UPDATE, progress => (self.progress = progress));
     },
@@ -61,12 +57,12 @@
 
   #cancel {
     position: absolute;
-    top: 56%;
+    top: 60%;
     background-color: #1a1d20;
   }
 
-  .progress {
-    width: 80%;
-    height: 9px;
+  #spinner {
+    width: 3em;
+    height: 3em;
   }
 </style>
