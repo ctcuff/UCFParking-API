@@ -38,16 +38,17 @@
             <b-dropdown-item
                 v-for="(week, index) in weeks"
                 @click="
-                selectedWeek = week.title
+                selectedWeek = week.name
                 activeNavItem = 'week'
                 emitLoad('/data/week/' + index)
                 "
                 :key="index"
             >
-              {{ week.title }} <span class="text-muted date-range">{{ week.range }}</span>
+              {{ week.name }} <span class="text-muted date-range">{{ week.range }}</span>
             </b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item-dropdown
+              class="scrollable-menu"
               :text="selectedMonth || 'View month'"
               :class="{ 'nav-active': activeNavItem === 'month' }"
           >
@@ -55,12 +56,12 @@
                 v-for="(month, index) in months"
                 :key="index"
                 @click="
-                selectedMonth = month
+                selectedMonth = month.name
                 activeNavItem = 'month'
                 emitLoad('/data/month/' + (index + 1))
                 "
             >
-              {{ month }}
+              {{ month.name }}  <span class="text-muted date-range">{{ month.year }}</span>
             </b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item
@@ -138,19 +139,31 @@
       const startDate = '2019-01-02T08:00:49.000Z';
       const today = moment();
       const weeks = [];
-      const months = moment.months().slice(0, today.month() + 1);
+      const months = [];
       const numWeeks = parseInt(today.format('w')) - 1;
-      const firstDate = moment(startDate);
+      let firstDate = moment(startDate);
 
+      // Adds weeks 0 to the current week to the week nav dropdown
       for (let i = 0; i <= numWeeks; i++) {
-        const startDate = firstDate.format('MMM DD');
+        const start = firstDate.format('MMM DD');
         // The first week has to be treated differently since it starts on Wednesday
-        const endDate = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
+        const end = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
         weeks.push({
-          title: `Week ${i + 1}`,
-          range: `${startDate} - ${endDate}`
+          name: `Week ${i + 1}`,
+          range: `${start} - ${end}`
         });
         firstDate.add({ days: 1 });
+      }
+
+      firstDate = moment(startDate);
+
+      // Adds January to the current month to the month nav dropdown
+      for (let i = 0; i < today.month() + 1; i++) {
+        months.push({
+          name: firstDate.format('MMMM'),
+          year: firstDate.format('YYYY')
+        });
+        firstDate.add({ months: 1 });
       }
 
       return {
