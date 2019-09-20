@@ -96,6 +96,7 @@
               v-model="selectedDate"
               value-zone="local"
               :auto="true"
+              :week-start="0"
               :min-datetime="startDate"
               :max-datetime="new Date().toISOString()"
           />
