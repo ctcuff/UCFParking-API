@@ -94,6 +94,7 @@
           <datetime
               input-id="datetime-input"
               v-model="selectedDate"
+              value-zone="local"
               :auto="true"
               :min-datetime="startDate"
               :max-datetime="new Date().toISOString()"
@@ -299,5 +300,10 @@
 
   ::v-deep .vdatetime-popup__actions__button--confirm {
     display: none;
+  }
+
+  ::v-deep .vdatetime-popup {
+    // Fixes blurry calendar in Chrome
+    -webkit-transform: translate(-50%, -50.1%);
   }
 </style>

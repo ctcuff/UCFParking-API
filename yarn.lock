@@ -5538,7 +5538,7 @@ pluralize@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-7.0.0.tgz#298b89df8b93b0221dbf421ad2b1b1ea23fc6777"
 
-popper.js@^1.15.0:
+popper.js@^1.14.7, popper.js@^1.15.0:
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.15.0.tgz#5560b99bbad7647e9faa475c6b8056621f5a4ff2"
 
@@ -7338,6 +7338,13 @@ utils-merge@1.0.1:
 uuid@^3.0.1, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
+
+v-calendar@^1.0.0-beta.19:
+  version "1.0.0-beta.19"
+  resolved "https://registry.yarnpkg.com/v-calendar/-/v-calendar-1.0.0-beta.19.tgz#5cc0479523ee237f2d76cf9c83c1c1fecd56b1a3"
+  dependencies:
+    lodash "^4.17.11"
+    popper.js "^1.14.7"
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
