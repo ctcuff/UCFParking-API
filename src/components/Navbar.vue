@@ -1,13 +1,15 @@
 <template>
   <div class="hello">
     <b-navbar type="dark" variant="dark" toggleable="lg">
-      <a
-          href="https://github.com/ctcuff/UCFParking-Web"
-          target="_blank"
-          title="View source on GitHub"
-          id="github-icon"
-          class="fa fa-github"></a>
-      <b-navbar-brand>Garage Data</b-navbar-brand>
+      <b-navbar-brand>
+        <a
+            href="https://github.com/ctcuff/UCFParking-Web"
+            target="_blank"
+            id="navbar-source-link"
+            title="View source on GitHub">
+          Garage Data
+        </a>
+      </b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse is-nav id="nav-collapse">
         <b-navbar-nav style="flex: 1">
@@ -61,7 +63,7 @@
                 emitLoad('/data/month/' + (index + 1))
                 "
             >
-              {{ month.name }}  <span class="text-muted date-range">{{ month.year }}</span>
+              {{ month.name }} <span class="text-muted date-range">{{ month.year }}</span>
             </b-dropdown-item>
           </b-nav-item-dropdown>
           <b-nav-item
@@ -225,10 +227,8 @@
     user-select: none;
   }
 
-  #github-icon {
-    font-size: 34px;
+  #navbar-source-link {
     color: white;
-    margin-right: 16px;
     text-decoration: none;
   }
 
