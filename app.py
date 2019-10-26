@@ -15,6 +15,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.debug = True
 SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
 dbx = dropbox.Dropbox(SERVER_CONFIG['DBOX_TOKEN'])
 CORS(app)
@@ -35,10 +36,22 @@ def jsonify_error(msg):
 @app.route('/api')
 def api():
     page = get(SCRAPE_URL)
+    valid_garages = {
+        'garage a', 'garage b', 'garage c', 'garage d', 'garage h', 'garage i', 'garage libra'
+    }
+    queried_garages = set(
+        'garage ' + name.lower()
+        for name in request.args.getlist('garages', type=str)
+    )
 
     if page.status_code != 200:
-        send_email(f"An error occurred in api(): Couldn't parse HTML (is {SCRAPE_URL} down?):\n\n{page.text}")
-        return jsonify_error(page.text)
+        send_email(
+            f"An error occurred in api(): "
+            f"Couldn't parse HTML (is {SCRAPE_URL} down?):\n\n{page.text}"
+        )
+        return jsonify_error(
+            f'Check {SCRAPE_URL}, the site may be unavailable or its contents may have changed.'
+        ), page.status_code
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -48,6 +61,16 @@ def api():
 
     for item in table:
         name = item.find('td').text
+
+        # Skip any garages not named Garage <name>. This will only happen if
+        # UCF decides to change the naming style for some reason
+        if name.lower() not in valid_garages:
+            continue
+
+        # Skip garages that weren't passed in through
+        # the query param (if that param exists of course)
+        if queried_garages and name.lower() not in queried_garages:
+            continue
 
         # Skip the first table row since it's just the header
         spaces = item.find_all('td')[1].text.rstrip().replace('\n', '').split('/')
@@ -67,10 +90,12 @@ def api():
             'percent_full': percent_full,
         })
 
-    if len(garage_data['garages']) != 7:
+    # 7 garages won't be returned if the user only
+    # queries for specific garages
+    if not queried_garages and len(garage_data['garages']) != 7:
         send_email(
             f'Invalid data length. '
-            f'Check {SCRAPE_URL} to see if the website has changed or is no longer running'
+            f'Check {SCRAPE_URL} to see if the website has changed or is no longer running.'
         )
 
     return jsonify(garage_data)
@@ -82,7 +107,7 @@ def add():
 
     # Make sure normal users can't add data to the database
     if header_key != SERVER_CONFIG['KEY']:
-        return jsonify_error('Missing or invalid key')
+        return jsonify_error('Missing or invalid key'), 403
 
     date = datetime.now()
     garage_data = api().json
@@ -116,7 +141,7 @@ def add():
         garage.save()
     except Exception as e:
         send_email(f'An error occurred in add(): {traceback.format_exc()}')
-        return jsonify_error(f'Failed to add data: {str(e)}')
+        return jsonify_error(f'Failed to add data: {str(e)}'), 500
 
     upload = Thread(target=upload_backup)
     upload.start()
@@ -126,18 +151,12 @@ def add():
 
 @app.route('/data/all')
 def get_all_data():
-    return query_database(
-        Garage.objects(),
-        request.args.get('sort')
-    )
+    return query_database(Garage.objects(), request.args)
 
 
 @app.route('/data/month/<int:month>/day/<int:day>')
 def get_data_at_day(month, day):
-    return query_database(
-        Garage.objects(day=day, month=month),
-        request.args.get('sort')
-    )
+    return query_database(Garage.objects(day=day, month=month), request.args)
 
 
 @app.route('/data/today')
@@ -148,10 +167,7 @@ def get_data_for_today():
 
 @app.route('/data/week/<int:week>')
 def get_data_at_week(week):
-    return query_database(
-        Garage.objects(week=week),
-        request.args.get('sort')
-    )
+    return query_database(Garage.objects(week=week), request.args)
 
 
 @app.route('/data/week')
@@ -161,10 +177,7 @@ def get_current_week():
 
 @app.route('/data/month/<int:month>')
 def get_data_at_month(month):
-    return query_database(
-        Garage.objects(month=month),
-        request.args.get('sort')
-    )
+    return query_database(Garage.objects(month=month), request.args)
 
 
 @app.route('/data/month')
@@ -174,7 +187,7 @@ def get_current_month():
 
 @app.errorhandler(404)
 def error404(err):
-    return jsonify_error('Page not found')
+    return jsonify_error('Page not found'), 404
 
 
 @app.errorhandler(408)
@@ -183,16 +196,16 @@ def error408(err):
         f'Request timed out. '
         f'Check {SCRAPE_URL} to see if the connection is just slow.'
     )
-    return jsonify_error('Request timed out')
+    return jsonify_error('Request timed out'), 408
 
 
 @app.errorhandler(500)
 def error500(err):
     send_email(f'An internal server error occurred:\n\n{traceback.format_exc()}')
-    return jsonify_error('Internal server error')
+    return jsonify_error('Internal server error'), 500
 
 
-def query_database(objects, sort):
+def query_database(objects, request_args):
     sort_order = {
         'asc': 'timestamp',
         'ascending': 'timestamp',
@@ -200,20 +213,55 @@ def query_database(objects, sort):
         'descending': '-timestamp',
     }
 
+    sort = request_args.get('sort', default='asc', type=str)
+    garages = request_args.getlist('garages', type=str)
+
     if sort not in sort_order:
         sort = 'asc'
 
     data = objects.order_by('timestamp', sort_order[sort]).exclude('id')
 
+    if not garages:
+        return jsonify({
+            'count': data.count(),
+            'data': json.loads(data.to_json())
+        })
+
+    # Only return the garages that were passed through the
+    # request header (if the header was present)
+    data = data.aggregate({
+        '$project': {
+            '_id': False,
+            'date': True,
+            'day': True,
+            'month': True,
+            'timestamp': True,
+            'week': True,
+            'garages': {
+                '$filter': {
+                    'input': '$garages',
+                    'as': 'garage',
+                    'cond': {
+                        '$in': ['$$garage.name', [f'Garage {name}' for name in garages]]
+                    }
+                }
+            }
+        }
+    })
+
+    # Data that's aggregated returns a list of Documents
+    # that don't have a to_json() or count() method
+    res = list(data)
+
     return jsonify({
-        'count': data.count(),
-        'data': json.loads(data.to_json())
+        'count': len(res),
+        'data': res
     })
 
 
 def upload_backup():
     """
-    Saves a backup of all json to Dropbox
+    Saves a backup of all json data to Dropbox
     """
 
     with app.test_request_context():
