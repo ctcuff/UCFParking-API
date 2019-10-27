@@ -3,7 +3,7 @@ import json
 from threading import Thread
 import dropbox
 from dropbox.files import WriteMode
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from config import DATABASE_CONFIG, SERVER_CONFIG
 from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
@@ -12,13 +12,18 @@ from email_helper import send_email
 from mongoengine import connect
 from flask_cors import CORS
 from datetime import datetime
+from urllib.parse import urlparse
+from flask_talisman import Talisman
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./dist', static_folder='./dist/static')
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.debug = True
 SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
 dbx = dropbox.Dropbox(SERVER_CONFIG['DBOX_TOKEN'])
+
 CORS(app)
+# Transforms all http requests to https
+Talisman(app, content_security_policy=None)
 connect(
     db=DATABASE_CONFIG['TABLE_NAME'],
     username=DATABASE_CONFIG['USERNAME'],
@@ -33,8 +38,29 @@ def jsonify_error(msg, error_code):
 
 
 @app.route('/')
+def index():
+    # The site is hosted on Heroku with a custom domain so
+    # ucf-garages.herokuapp.com/* and api.ucfgarages.com/*
+    # should all return json responses while
+    # ucfgarages.com should return the actual html
+    base_url = request.base_url
+
+    if not base_url.startswith('http'):
+        base_url = 'http://' + base_url
+
+    url = urlparse(base_url)
+    parts = url.hostname.split('.')
+
+    if 'herokuapp' in parts or 'api' in parts:
+        return api()
+
+    return render_template('index.html')
+
+
 @app.route('/api')
 def api():
+    # This route is needed since navigating to api.ucfgarages.com
+    # really just routes to ucf-garages.herokuapp.com/api
     page = get(SCRAPE_URL)
     valid_garages = {
         'garage a', 'garage b', 'garage c', 'garage d', 'garage h', 'garage i', 'garage libra'
@@ -151,37 +177,44 @@ def add():
     return jsonify({'response': 'Successfully added data'})
 
 
+@app.route('/all')
 @app.route('/data/all')
 def get_all_data():
     return query_database(Garage.objects(), request.args)
 
 
+@app.route('/month/<int:month>/day/<int:day>')
 @app.route('/data/month/<int:month>/day/<int:day>')
 def get_data_at_day(month, day):
     return query_database(Garage.objects(day=day, month=month), request.args)
 
 
+@app.route('/today')
 @app.route('/data/today')
 def get_data_for_today():
     today = datetime.now()
     return get_data_at_day(today.month, today.day)
 
 
+@app.route('/week/<int:week>')
 @app.route('/data/week/<int:week>')
 def get_data_at_week(week):
     return query_database(Garage.objects(week=week), request.args)
 
 
+@app.route('/week')
 @app.route('/data/week')
 def get_current_week():
     return get_data_at_week(datetime.now().strftime('%U'))
 
 
+@app.route('/month/<int:month>')
 @app.route('/data/month/<int:month>')
 def get_data_at_month(month):
     return query_database(Garage.objects(month=month), request.args)
 
 
+@app.route('/month')
 @app.route('/data/month')
 def get_current_month():
     return get_data_at_month(datetime.now().month)
