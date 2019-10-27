@@ -1,7 +1,7 @@
 # UCFParking-API
-This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to api.ucfgarages.com and parsing the json. You can view a graph of the data at ucfgarages.com.
+This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to [api.ucfgarages.com](https://api.ucfgarages.com) and parsing the json. You can view a graph of the data at [ucfgarages.com](https://ucfgarages.com).
 
-How exactly is this useful you ask? Well, making a request to `api.ucfgarages.com/` returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/all` route returns a JSON response with info about how full each garage was from January to the current date (**BEWARE**, as of now, this will return a lot of JSON. It will be paginated eventually, but that's something I'm still working on). The list is updated at the top of every hour every day. To view a specific date, make a request to `/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, api.ucfgarages.com/month/1/day/2 returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this:
+How exactly is this useful you ask? Well, making a request to [api.ucfgarages.com/](https://api.ucfgarages.com/) returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/all` route returns a JSON response with info about how full each garage was from January to the current date (**BEWARE**, as of now, this will return a lot of JSON. It will be paginated eventually, but that's something I'm still working on). The list is updated at the top of every hour every day. To view a specific date, make a request to `/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, [api.ucfgarages.com/month/1/day/2](https://api.ucfgarages.com/month/1/day/2) returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this:
 ```json
 {
    "count": 0,
@@ -52,7 +52,7 @@ SERVER_CONFIG = {
 ```
 
 ### Sidenote part 2 (the sequel)
-This code in this repo is actually 2 projects merged into one. The api is hosted at api.ucfgarages.com while the website to view that data is hosted at ucfgarages.com.
+This code in this repo is actually 2 projects merged into one. The api is hosted at [api.ucfgarages.com](https://api.ucfgarages.com) while the website to view that data is hosted at [ucfgarages.com](https://ucfgarages.com).
 
 
 # How do I build this?
@@ -80,28 +80,28 @@ In order to actually see the data, you'll need to have data in the database (I k
 2. Install the [Heroku Scheduler](https://elements.heroku.com/addons/scheduler) addon. You'll need to have it run the command: `curl --header "key: your-secure-key-here" https://your-project-name.herokuapp.com/add -v`. You can choose any frequency but I chose: `Hourly at :0`.
 
 ### Available routes
-Note that these routes are for api.ucfgarages.com
+Note: these routes are for [api.ucfgarages.com](https://api.ucfgarages.com). Since the project use to be hosted only at [ucf-garages.herokuapp.com](https://ucf-garages.herokuapp.com), I had to use `/data/<route>` for any api requests. Since that's no longer the case, you don't need `/data` in any request (but it still work if you were using it before).
 
-* [`/`](api.ucfgarages.com/)
+* [`/`](https://api.ucfgarages.com/)
    * Returns JSON containing parking garage info (assuming UCF's parking website is still up...)
-* [`/all`](api.ucfgarages.com/all)
+* [`/all`](https://api.ucfgarages.com/all)
   * Returns **ALL THE JSON!!!**. This will probably be paginated eventually.
-* [`/today`](api.ucfgarages.com/today)
+* [`/today`](https://api.ucfgarages.com/today)
   * Returns data for the current date (starting at 12 AM)
-* [`/week`](api.ucfgarages.com/week)
+* [`/week`](https://api.ucfgarages.com/week)
    * Returns data for the current week
    * Note that the first week starts at Jan, 2 since that was the day the site first went up
    * Every other week starts on Sunday
 * `/week/{week}`
-   * For example: [`/week/1`](api.ucfgarages.com/week/1)
+   * For example: [`/week/1`](https://api.ucfgarages.com/week/1)
    * The range for `{week}` is 0 - 52
-* [`/month`](api.ucfgarages.com/month)
+* [`/month`](https://api.ucfgarages.com/month)
   * Returns data for the current month
 * `/month/{month}`
-   * For example: [`/month/1`](api.ucfgarages.com/month/1)
+   * For example: [`/month/1`](https://api.ucfgarages.com/month/1)
    * The range for `{month}` is 1 - 12
 * `/month/{month}/day/{day}`
-   * For example: [`/month/1/day/3`](api.ucfgarages.com/month/1/day/3)
+   * For example: [`/month/1/day/3`](https://api.ucfgarages.com/month/1/day/3)
 
 ### Query parameters
 * `sort: string`
@@ -110,7 +110,7 @@ Note that these routes are for api.ucfgarages.com
 * `garages: array`
    * Specifies which garages should be returned in a response. Note that this works for **every** route!
    * Possible values: `A`, `B`, `C`, `D`, `H`, `I`, `Libra` (all case sensitive)
-   * For example: api.ucfgarages.com/today?garages=A&garages=Libra returns:
+   * For example: [api.ucfgarages.com/today?garages=A&garages=Libra](https://api.ucfgarages.com/today?garages=A&garages=Libra) returns:
    ```python
    {
       "count": 21,
@@ -142,7 +142,7 @@ Note that these routes are for api.ucfgarages.com
       ]
    }
    ```
-   * Another example: api.ucfgarages.com/?garages=H
+   * Another example: [api.ucfgarages.com/?garages=H](https://api.ucfgarages.com/?garages=H)
    ```json
    {
       "garages": [
@@ -158,7 +158,7 @@ Note that these routes are for api.ucfgarages.com
    ```
 
 
-### Example request to /api
+### Example request to /
 Using Python 3.x
 ```python
 >>> from requests import get
@@ -287,7 +287,8 @@ Using Python 3.x
          "month": 1,
          "timestamp": 1546488063,
          "week": 0
-      }
+      },
+      ...
    ]
 }
 ```
