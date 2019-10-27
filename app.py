@@ -28,8 +28,8 @@ connect(
 )
 
 
-def jsonify_error(msg):
-    return jsonify({'error': msg})
+def jsonify_error(msg, error_code):
+    return jsonify({'error': msg}), error_code
 
 
 @app.route('/')
@@ -39,6 +39,7 @@ def api():
     valid_garages = {
         'garage a', 'garage b', 'garage c', 'garage d', 'garage h', 'garage i', 'garage libra'
     }
+
     queried_garages = set(
         'garage ' + name.lower()
         for name in request.args.getlist('garages', type=str)
@@ -50,8 +51,9 @@ def api():
             f"Couldn't parse HTML (is {SCRAPE_URL} down?):\n\n{page.text}"
         )
         return jsonify_error(
-            f'Check {SCRAPE_URL}, the site may be unavailable or its contents may have changed.'
-        ), page.status_code
+            f'Check {SCRAPE_URL}, the site may be unavailable or its contents may have changed.',
+            page.status_code
+        )
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -107,7 +109,7 @@ def add():
 
     # Make sure normal users can't add data to the database
     if header_key != SERVER_CONFIG['KEY']:
-        return jsonify_error('Missing or invalid key'), 403
+        return jsonify_error('Missing or invalid key', 403)
 
     date = datetime.now()
     garage_data = api().json
@@ -117,7 +119,7 @@ def add():
             "Garage data was not available. This was probably because the site was down. "
             "Check to see if UCF's parking site is up."
         )
-        return
+        return jsonify_error('No data available to add.', 500)
 
     # noinspection PyTypeChecker
     garage = Garage(
@@ -141,7 +143,7 @@ def add():
         garage.save()
     except Exception as e:
         send_email(f'An error occurred in add(): {traceback.format_exc()}')
-        return jsonify_error(f'Failed to add data: {str(e)}'), 500
+        return jsonify_error(f'Failed to add data: {str(e)}', 500)
 
     upload = Thread(target=upload_backup)
     upload.start()
@@ -187,7 +189,7 @@ def get_current_month():
 
 @app.errorhandler(404)
 def error404(err):
-    return jsonify_error('Page not found'), 404
+    return jsonify_error('Page not found', 404)
 
 
 @app.errorhandler(408)
@@ -196,13 +198,13 @@ def error408(err):
         f'Request timed out. '
         f'Check {SCRAPE_URL} to see if the connection is just slow.'
     )
-    return jsonify_error('Request timed out'), 408
+    return jsonify_error('Request timed out', 408)
 
 
 @app.errorhandler(500)
 def error500(err):
     send_email(f'An internal server error occurred:\n\n{traceback.format_exc()}')
-    return jsonify_error('Internal server error'), 500
+    return jsonify_error('Internal server error', 500)
 
 
 def query_database(objects, request_args):
