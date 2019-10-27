@@ -1,7 +1,7 @@
 # UCFParking-API
-This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to https://ucf-garages.herokuapp.com/api and parsing the json.
+This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to api.ucfgarages.com and parsing the json. You can view a graph of the data at ucfgarages.com.
 
-How exactly is this useful you ask? Well, making a request to the `/api` route returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/data/all` route returns a JSON response with info about how full each garage was from January to the current date (**BEWARE**, as of now, this will return a lot of JSON. It will be paginated eventually, but that's something I'm still working on). The list is updated at the top of every hour every day. To view a specific date, make a request to `/data/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, [`https://ucf-garages.herokuapp.com/data/month/1/day/2`](https://ucf-garages.herokuapp.com/data/month/1/day/2) returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this:
+How exactly is this useful you ask? Well, making a request to `api.ucfgarages.com/` returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/all` route returns a JSON response with info about how full each garage was from January to the current date (**BEWARE**, as of now, this will return a lot of JSON. It will be paginated eventually, but that's something I'm still working on). The list is updated at the top of every hour every day. To view a specific date, make a request to `/month/{month}/day/{day}` where `{month}` is an int representing the month (1 for January, 2 for February, etc) and `{day}` is an int representing the number day of that month. For example, api.ucfgarages.com/month/1/day/2 returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this:
 ```json
 {
    "count": 0,
@@ -52,7 +52,7 @@ SERVER_CONFIG = {
 ```
 
 ### Sidenote part 2 (the sequel)
-This code in this repo is actually 2 projects merged into one. The api is hosted on Heroku at https://ucf-garages.herokuapp.com/ while the website to view that data is hosted at https://ucfparking.herokuapp.com/.
+This code in this repo is actually 2 projects merged into one. The api is hosted at api.ucfgarages.com while the website to view that data is hosted at ucfgarages.com.
 
 
 # How do I build this?
@@ -68,8 +68,8 @@ Prerequisites: `Python >= 3.6` and `npm`
 5. Head to [MongoDB's cloud site](https://www.mongodb.com/cloud) to create a cluster. Once that's set up, open the connect dialog and choose `Connect Your Application` for Python 3.6 or later.
 6. Head to [Dropbox's site](https://www.dropbox.com/developers/documentation/python#tutorial) to create a Python app and take note of the token. This will be used for saving a backup. If you don't want to do this, just delete the `upload_backup()` function at the bottom of `app.py` and remove `DBOX_TOKEN` from `SERVER_CONFIG` in `config.py`.
 7. In `config.py`, replace the values for database config with your MongoDB cluster password, username, table name, and host name. Replace the values for Gmail and dropbox settings and generate a server key.
-8. Once the backend has been set up, run `app.py`. If it works, the `/` and `/api` routes should give you a response that looks like [this](https://ucf-garages.herokuapp.com/).
-9. To run the frontend, run `npm run serve` in the root directory (note that the site probably won't display any graphs if the database is empty, see below).
+8. Once the backend has been set up, run `app.py`. If it works, the `/api` route should give you a response that looks like [this](https://api.ucfgarages.com/).
+9. To run the frontend, run `npm run build` in the root directory. That should create a `/dist` folder in `/api/dist`. Now when you run `app.py` and view the `/` route, you should see the frontend (note that the site probably won't display any graphs if the database is empty, see below).
 
 ### Setting up Heroku scheduler
 
@@ -80,35 +80,37 @@ In order to actually see the data, you'll need to have data in the database (I k
 2. Install the [Heroku Scheduler](https://elements.heroku.com/addons/scheduler) addon. You'll need to have it run the command: `curl --header "key: your-secure-key-here" https://your-project-name.herokuapp.com/add -v`. You can choose any frequency but I chose: `Hourly at :0`.
 
 ### Available routes
-* [`/`](https://ucf-garages.herokuapp.com/) or [`/api`](https://ucf-garages.herokuapp.com/api)
+Note that these routes are for api.ucfgarages.com
+
+* [`/`](api.ucfgarages.com/)
    * Returns JSON containing parking garage info (assuming UCF's parking website is still up...)
-* [`/data/all`](https://ucf-garages.herokuapp.com/data/all)
+* [`/all`](api.ucfgarages.com/all)
   * Returns **ALL THE JSON!!!**. This will probably be paginated eventually.
-* [`/data/today`](https://ucf-garages.herokuapp.com/data/today)
+* [`/today`](api.ucfgarages.com/today)
   * Returns data for the current date (starting at 12 AM)
-* [`/data/week`](https://ucf-garages.herokuapp.com/data/week)
+* [`/week`](api.ucfgarages.com/week)
    * Returns data for the current week
    * Note that the first week starts at Jan, 2 since that was the day the site first went up
    * Every other week starts on Sunday
-* `/data/week/{week}`
-   * For example: [`/data/week/1`](https://ucf-garages.herokuapp.com/data/week/1)
+* `/week/{week}`
+   * For example: [`/week/1`](api.ucfgarages.com/week/1)
    * The range for `{week}` is 0 - 52
-* [`/data/month`](https://ucf-garages.herokuapp.com/data/month)
+* [`/month`](api.ucfgarages.com/month)
   * Returns data for the current month
-* `/data/month/{month}`
-   * For example: [`/data/month/1`](https://ucf-garages.herokuapp.com/data/month/1)
+* `/month/{month}`
+   * For example: [`/month/1`](api.ucfgarages.com/month/1)
    * The range for `{month}` is 1 - 12
-* `/data/month/{month}/day/{day}`
-   * For example: [`/data/month/1/day/3`](https://ucf-garages.herokuapp.com/data/month/1/day/3)
+* `/month/{month}/day/{day}`
+   * For example: [`/month/1/day/3`](api.ucfgarages.com/month/1/day/3)
 
 ### Query parameters
 * `sort: string`
   * Possible values: `asc`, `ascending`, `desc`, `descending`. The default sort order is `ascending`.
-  * For example: `https://ucf-garages.herokuapp.com/data/week?sort=desc`
+  * For example: api.ucfgarages.com/week?sort=desc
 * `garages: array`
    * Specifies which garages should be returned in a response. Note that this works for **every** route!
    * Possible values: `A`, `B`, `C`, `D`, `H`, `I`, `Libra` (all case sensitive)
-   * For example: `https://ucf-garages.herokuapp.com/data/today?garages=A&garages=Libra` returns:
+   * For example: api.ucfgarages.com/today?garages=A&garages=Libra returns:
    ```python
    {
       "count": 21,
@@ -140,7 +142,7 @@ In order to actually see the data, you'll need to have data in the database (I k
       ]
    }
    ```
-   * Another example: `https://ucf-garages.herokuapp.com/?garages=H`
+   * Another example: api.ucfgarages.com/?garages=H
    ```json
    {
       "garages": [
@@ -161,7 +163,7 @@ Using Python 3.x
 ```python
 >>> from requests import get
 >>> from json import dumps
->>> res = get('https://ucf-garages.herokuapp.com/api')
+>>> res = get('https://api.ucfgarages.com/')
 >>> dumps(res.json(), indent=3)
 {
    "garages": [
@@ -218,12 +220,12 @@ Using Python 3.x
 }
 ```
 
-### Example request to /data/month/1/day/2
+### Example request to /month/1/day/2
 Using Python 3.x
 ```python
 >>> from requests import get
 >>> from json import dumps
->>> res = get('https://ucf-garages.herokuapp.com/data/month/1/day/2')
+>>> res = get('https://api.ucfgarages.com/month/1/day/2')
 >>> dumps(res.json(), indent=3)
 {
    "count": 21,
