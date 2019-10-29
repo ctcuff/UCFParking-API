@@ -3,7 +3,7 @@ import json
 from threading import Thread
 import dropbox
 from dropbox.files import WriteMode
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from config import DATABASE_CONFIG, SERVER_CONFIG
 from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
@@ -238,6 +238,11 @@ def error408(err):
 def error500(err):
     send_email(f'An internal server error occurred:\n\n{traceback.format_exc()}')
     return jsonify_error('Internal server error', 500)
+
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('.', 'robots.txt')
 
 
 def query_database(objects, request_args):
