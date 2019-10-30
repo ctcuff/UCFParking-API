@@ -1,5 +1,4 @@
 import unittest
-import requests
 import sys
 
 sys.path.append('../')
@@ -7,13 +6,12 @@ sys.path.append('../')
 from app import app
 
 
-class TestApi(unittest.TestCase):
+class TestFrontEnd(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # The '/' route should return html when the host is 'ucfgarages'
         app.config['SERVER_NAME'] = 'ucfgarages'
 
-    @classmethod
     def setUp(self):
         self.app = app.test_client()
 

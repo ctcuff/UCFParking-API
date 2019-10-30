@@ -1,6 +1,6 @@
 import unittest
-import requests
 import sys
+from mongoengine import disconnect_all
 
 # Workaround to be able to import up a directory
 sys.path.append('../')
@@ -10,9 +10,16 @@ from app import app
 
 class TestApi(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         app.config['SERVER_NAME'] = 'api.ucfgarages'
 
+    @classmethod
+    def tearDownClass(cls):
+        # Disconnect to make sure the app's database connection doesn't
+        # clash with the test database connection
+        disconnect_all()
+
+    def setUp(self):
         self.app = app.test_client()
         self.app.debug = True
         # The '/' route should return json when the host is 'api.ucfgarages'
@@ -59,7 +66,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(file_contents, resp.data.decode('utf8').replace('\r\n', '\n'))
 
     def test_404(self):
-        resp = self.app.get('/some/invaid/route')
+        resp = self.app.get('/some/invalid/route')
         self.assertEqual(resp.status_code, 404)
 
     def validate_garage_data(self, garages):
@@ -107,9 +114,7 @@ class TestApi(unittest.TestCase):
             self.assertEqual(
                 garage['spaces_filled'] + garage['spaces_left'], garage['max_spaces']
             )
-            self.assertTrue(
-                garage['percent_full'] >= 0.0 and garage['percent_full'] <= 100.0
-            )
+            self.assertTrue(0.0 <= garage['percent_full'] <= 100.0)
 
 
 if __name__ == '__main__':
