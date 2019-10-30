@@ -7,15 +7,15 @@ sys.path.append('../')
 
 from app import app
 
-# The '/' route should return json when the host is 'api.ucfgarages'
-app.config['SERVER_NAME'] = 'api.ucfgarages'
-
 
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(self):
+        app.config['SERVER_NAME'] = 'api.ucfgarages'
+
         self.app = app.test_client()
-        self.app.testing = True
+        self.app.debug = True
+        # The '/' route should return json when the host is 'api.ucfgarages'
         self.valid_garage_names = {
             'Garage A',
             'Garage B',
@@ -25,9 +25,6 @@ class TestApi(unittest.TestCase):
             'Garage I',
             'Garage Libra',
         }
-
-    def test_debug(self):
-        self.assertTrue(app.debug, msg='Make sure debug is enabled when running tests')
 
     def test_api(self):
         res = self.app.get('/api')
