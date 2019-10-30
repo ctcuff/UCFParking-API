@@ -1,0 +1,3 @@
+[tool.black]
+# Don't replace single quotes with double quotes
+skip-string-normalization = true
