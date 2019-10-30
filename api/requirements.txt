@@ -7,3 +7,4 @@ pymongo[tls,srv]==3.8.0
 beautifulsoup4==4.8.0
 python_dateutil==2.8.0
 dropbox==9.3.0
+flask-talisman==0.7.0
