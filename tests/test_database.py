@@ -1,7 +1,7 @@
 import unittest
 import mongomock
 import sys
-from mongoengine import connect, disconnect, StringField, Document, ValidationError
+from mongoengine import connect, disconnect_all, ValidationError
 from datetime import datetime
 from json import load
 
@@ -10,41 +10,43 @@ sys.path.append('../')
 from models import Garage, GarageEntry
 
 
-class TestPerson(unittest.TestCase):
+def make_garage(date, garage_entries):
+    garage = Garage(
+        date=date.isoformat(),
+        timestamp=int(date.timestamp()),
+        day=date.day,
+        week=int(date.strftime('%U')),
+        month=date.month,
+        garages=[
+            GarageEntry(
+                max_spaces=entry['max_spaces'],
+                name=entry['name'],
+                percent_full=entry['percent_full'],
+                spaces_filled=entry['spaces_filled'],
+                spaces_left=entry['spaces_left'],
+            )
+            for entry in garage_entries
+        ],
+    )
+    return garage
+
+
+class TestDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        connect('mongoenginetest', host='mongomock://localhost', alias='testing')
+        connect('mongoenginetest', host='mongomock://localhost')
 
     @classmethod
     def tearDownClass(cls):
-        disconnect(alias='testing')
+        disconnect_all()
 
     def test_insert_garage(self):
         data_file = open('data/single_garage.json')
         dummy_data = load(data_file)
 
         data_file.close()
-
         date = datetime.now()
-
-        garage = Garage(
-            date=date.isoformat(),
-            timestamp=int(date.timestamp()),
-            day=date.day,
-            week=int(date.strftime('%U')),
-            month=date.month,
-            garages=[
-                GarageEntry(
-                    max_spaces=entry['max_spaces'],
-                    name=entry['name'],
-                    percent_full=entry['percent_full'],
-                    spaces_filled=entry['spaces_filled'],
-                    spaces_left=entry['spaces_left'],
-                )
-                for entry in dummy_data
-            ],
-        )
-
+        garage = make_garage(date, dummy_data)
         garage.save()
 
         self.assertEqual(garage.date, date.isoformat())
@@ -71,26 +73,7 @@ class TestPerson(unittest.TestCase):
             data_file.close()
 
             dummy_data[0]['name'] = 'Garage Z'
-
-            date = datetime.now()
-
-            garage = Garage(
-                date=date.isoformat(),
-                timestamp=int(date.timestamp()),
-                day=date.day,
-                week=int(date.strftime('%U')),
-                month=date.month,
-                garages=[
-                    GarageEntry(
-                        max_spaces=entry['max_spaces'],
-                        name=entry['name'],
-                        percent_full=entry['percent_full'],
-                        spaces_filled=entry['spaces_filled'],
-                        spaces_left=entry['spaces_left'],
-                    )
-                    for entry in dummy_data
-                ],
-            )
+            garage = make_garage(datetime.now(), dummy_data)
 
             garage.save()
 
