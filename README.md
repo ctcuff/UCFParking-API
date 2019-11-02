@@ -56,7 +56,7 @@ This code in this repo is actually 2 projects merged into one. The api is hosted
 
 
 # How do I build this?
-Prerequisites: `Python >= 3.6` and `npm`
+Prerequisites: `Python 3` and `npm`
 
 ### Building the backend and frontend
 
@@ -159,7 +159,6 @@ Note: these routes are for [api.ucfgarages.com](https://api.ucfgarages.com). Sin
 
 
 ### Example request to /
-Using Python 3.x
 ```python
 >>> from requests import get
 >>> from json import dumps
@@ -221,7 +220,6 @@ Using Python 3.x
 ```
 
 ### Example request to /month/1/day/2
-Using Python 3.x
 ```python
 >>> from requests import get
 >>> from json import dumps
