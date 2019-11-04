@@ -12,12 +12,12 @@ How exactly is this useful you ask? Well, making a request to [api.ucfgarages.co
 # How does it work?
 Heroku scheduler is a Heroku addon that can run a command at set intervals. Every hour, Heroku runs the `curl` command to the `/add` route (which requires a key) which scrapes UCF's parking site, extracts the garage info, and saves it to a MongoDB database. The `/add` route requires a key to prevent a regular user from making a request and adding data outside of that hourly interval. The table looks something like this (the values aren't exact):
 
-date                       |timestamp |day|week |month  |garage_data
----------------------------|--------- |---|-----|-------|---------------------------------------------------------
-2019-01-02T22:00:49.044984 |1546484465|2  |0    |1      |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
-2019-01-02T23:01:23.357748 |1546488063|2  |0    |1      |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
-2019-01-02T00:00:45.357748 |1546491676|3  |0    |1      |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
-2019-01-02T01:00:16.357748 |1546495277|3  |0    |1      |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
+date                       |timestamp |day|week |month  |year |garage_data
+---------------------------|--------- |---|-----|-------|-----|---------------------------------------------------------
+2019-01-02T22:00:49.044984 |1546484465|2  |0    |1      |2019 |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
+2019-01-02T23:01:23.357748 |1546488063|2  |0    |1      |2019 |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
+2019-01-02T00:00:45.357748 |1546491676|3  |0    |1      |2019 |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
+2019-01-02T01:00:16.357748 |1546495277|3  |0    |1      |2019 |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
 
 
 ### Sidenote
@@ -73,7 +73,7 @@ Prerequisites: `Python 3` and `npm`
 
 ### Setting up Heroku scheduler
 
-In order to actually see the data, you'll need to have data in the database (I know, it's crazy right ?). I use Heroku Scheduler to insert data every hour automatically, because I'd be too lazy to do it myself otherwise. **Note**: if you change the db schema, things will break and you and your code will be sad. Bad rhymes with sad, and being sad is bad.
+In order to actually see the data, you'll need to have data in the database (I know, it's crazy right?). I use Heroku Scheduler to insert data every hour automatically, because I'd be too lazy to do it myself otherwise. **Note**: If you change the db schema, things will break and you and your code will be sad. Bad rhymes with sad, and being sad is bad.
 
 0. Go to [Heroku's site](https://dashboard.heroku.com/apps) and create a new Python app.
 1. Upload the contents of `/api` to your Heroku project.
@@ -107,6 +107,10 @@ Note: these routes are for [api.ucfgarages.com](https://api.ucfgarages.com). Sin
 * `sort: string`
   * Possible values: `asc`, `ascending`, `desc`, `descending`. The default sort order is `ascending`.
   * For example: api.ucfgarages.com/week?sort=desc
+* `year: int`
+   * Specifies what year the api should return data from. The default is the current year.
+   * Possible values: `2019 - <current year>`
+   * For example: [api.ucfgarages.com/month/1?year=2019](https://api.ucfgarages.com/month/1?year=2019)
 * `garages: array`
    * Specifies which garages should be returned in a response. Note that this works for **every** route!
    * Possible values: `A`, `B`, `C`, `D`, `H`, `I`, `Libra` (all case sensitive)
@@ -136,7 +140,8 @@ Note: these routes are for [api.ucfgarages.com](https://api.ucfgarages.com). Sin
             ],
             "month": 10,
             "timestamp": 1572062585,
-            "week": 42
+            "week": 42,
+            "year": 2019
          },
          ...
       ]
@@ -284,7 +289,8 @@ Note: these routes are for [api.ucfgarages.com](https://api.ucfgarages.com). Sin
         ],
          "month": 1,
          "timestamp": 1546488063,
-         "week": 0
+         "week": 0,
+         "year": 2019
       },
       ...
    ]
