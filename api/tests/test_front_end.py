@@ -16,13 +16,25 @@ class TestFrontEnd(unittest.TestCase):
         self.app = app.test_client()
 
     def test_index(self):
-        file = open('../dist/index.html', encoding='utf8')
-        index_html = file.read()
-        file.close()
+        page = self.app.get('/')
 
-        resp = self.app.get('/')
-        self.assertTrue(resp.json is None)
-        self.assertEqual(index_html, resp.data.decode('utf8').replace('\r\n', '\n'))
+        self.assertEqual(page.status_code, 200)
+        self.assertTrue(page.json is None)
+        self.assertIn(b'<!DOCTYPE html>', page.data)
+
+    def test_404(self):
+        page = self.app.get('/some/invalid/route')
+
+        self.assertEqual(page.status_code, 404)
+        self.assertTrue(page.json is None)
+        self.assertIn(b'<!DOCTYPE html>', page.data)
+
+        page = self.app.get('/api')
+
+        self.assertEqual(page.status_code, 404)
+        self.assertTrue(page.json is None)
+        self.assertIn(b'<!DOCTYPE html>', page.data)
+
 
 
 if __name__ == '__main__':

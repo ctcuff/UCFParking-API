@@ -62,12 +62,17 @@ class TestApi(unittest.TestCase):
         file.close()
 
         resp = self.app.get('/robots.txt')
+
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(file_contents, resp.data.decode('utf8').replace('\r\n', '\n'))
 
     def test_404(self):
         resp = self.app.get('/some/invalid/route')
+
         self.assertEqual(resp.status_code, 404)
+        self.assertIsInstance(resp.json, dict)
+        self.assertIn('error', resp.json)
+        self.assertEqual(resp.json['error'], 'Endpoint not found')
 
     def validate_garage_data(self, garages):
         """
