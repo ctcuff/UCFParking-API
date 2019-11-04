@@ -154,6 +154,7 @@ def add():
         day=date.day,
         week=int(date.strftime('%U')),
         month=date.month,
+        year=date.year,
         garages=[
             GarageEntry(
                 max_spaces=entry['max_spaces'],
@@ -254,12 +255,13 @@ def query_database(objects, request_args):
     }
 
     sort = request_args.get('sort', default='asc', type=str)
+    year = request_args.get('year', default=datetime.now().year, type=int)
     garages = request_args.getlist('garages', type=str)
 
     if sort not in sort_order:
         sort = 'asc'
 
-    data = objects.order_by('timestamp', sort_order[sort]).exclude('id')
+    data = objects.filter(year=year).exclude('id').order_by('timestamp', sort_order[sort])
 
     if not garages:
         return jsonify({
@@ -277,6 +279,7 @@ def query_database(objects, request_args):
             'month': True,
             'timestamp': True,
             'week': True,
+            'year': True,
             'garages': {
                 '$filter': {
                     'input': '$garages',

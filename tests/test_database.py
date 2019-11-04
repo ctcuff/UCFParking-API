@@ -17,6 +17,7 @@ def make_garage(date, garage_entries):
         day=date.day,
         week=int(date.strftime('%U')),
         month=date.month,
+        year=date.year,
         garages=[
             GarageEntry(
                 max_spaces=entry['max_spaces'],
@@ -63,18 +64,41 @@ class TestDatabase(unittest.TestCase):
                 self.assertEqual(getattr(garage, key), entry[key])
 
     def test_insert_invalid_garage(self):
+        data_file = open('data/single_garage.json')
+        dummy_data = load(data_file)
+        data_file.close()
+
         with self.assertRaises(ValidationError):
             garage = Garage()
             garage.save()
 
+        # Duplicate garages shouldn't be allowed
         with self.assertRaises(ValidationError):
-            data_file = open('data/single_garage.json')
-            dummy_data = load(data_file)
-            data_file.close()
-
-            dummy_data[0]['name'] = 'Garage Z'
+            dummy_data[0]['name'] = 'Garage B'
             garage = make_garage(datetime.now(), dummy_data)
 
+            garage.save()
+
+        # Only allow valid garage names
+        with self.assertRaises(ValidationError):
+            dummy_data[0]['name'] = 'Garage X'
+            garage = make_garage(datetime.now(), dummy_data)
+
+            garage.save()
+
+        # Test invalid years
+        with self.assertRaises(ValidationError):
+            dummy_data[0]['name'] = 'Garage A'
+            date = datetime.now()
+            garage = make_garage(date.replace(year=2017), dummy_data)
+
+            garage.save()
+
+        with self.assertRaises(ValidationError):
+            dummy_data[0]['name'] = 'Garage A'
+            date = datetime.now()
+
+            garage = make_garage(date.replace(year=date.year + 1), dummy_data)
             garage.save()
 
 
