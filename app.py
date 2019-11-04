@@ -3,7 +3,7 @@ import json
 from threading import Thread
 import dropbox
 from dropbox.files import WriteMode
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template, send_from_directory, redirect, url_for
 from config import DATABASE_CONFIG, SERVER_CONFIG
 from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
@@ -22,8 +22,11 @@ SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
 dbx = dropbox.Dropbox(SERVER_CONFIG['DBOX_TOKEN'])
 
 CORS(app)
-# Transforms all http requests to https
-Talisman(app, content_security_policy=None)
+
+if not app.debug:
+    # Transforms all http requests to https
+    Talisman(app, content_security_policy=None)
+
 connect(
     db=DATABASE_CONFIG['TABLE_NAME'],
     username=DATABASE_CONFIG['USERNAME'],
@@ -37,13 +40,13 @@ def jsonify_error(msg, error_code):
     return jsonify({'error': msg}), error_code
 
 
-@app.route('/')
-def index():
-    # The site is hosted on Heroku with a custom domain so
-    # ucf-garages.herokuapp.com/* and api.ucfgarages.com/*
-    # should all return json responses while
-    # ucfgarages.com should return the actual html
-    base_url = request.base_url
+def is_api_request(base_url):
+    """
+    The site is hosted on Heroku with a custom domain so
+    ucf-garages.herokuapp.com/* and api.ucfgarages.com/*
+    should all return json responses while
+    ucfgarages.com should return the actual html
+    """
 
     if not base_url.startswith('http'):
         base_url = 'http://' + base_url
@@ -51,7 +54,27 @@ def index():
     url = urlparse(base_url)
     parts = url.hostname.split('.')
 
-    if 'herokuapp' in parts or 'api' in parts:
+    return 'herokuapp' in parts or 'api' in parts
+
+
+@app.before_request
+def before_request():
+    """
+    If the request comes from ucfgarages and it's a 404, return an
+    HTML response, otherwise, return the JSON response from `error404()`
+    """
+
+    if not is_api_request(request.base_url):
+        # /static isn't actually a valid route but we need to
+        # allow static so we can load resources from /dist/static
+        valid_routes = {'static', 'index', 'robots'}
+        if request.endpoint not in valid_routes:
+            return render_template('404.html'), 404
+
+
+@app.route('/')
+def index():
+    if is_api_request(request.base_url):
         return api()
 
     return render_template('index.html')
@@ -223,7 +246,7 @@ def get_current_month():
 
 @app.errorhandler(404)
 def error404(err):
-    return jsonify_error('Page not found', 404)
+    return jsonify_error('Endpoint not found', 404)
 
 
 @app.errorhandler(408)
