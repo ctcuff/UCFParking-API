@@ -5,7 +5,7 @@ let cancelRequest;
 const CancelToken = axios.CancelToken;
 const instance = axios.create({
   method: 'GET',
-  baseURL: 'https://ucf-garages.herokuapp.com'
+  baseURL: 'https://api.ucfgarages.com'
 });
 
 eventBus.$on(events.LOAD_CHART_DATA, url => {
