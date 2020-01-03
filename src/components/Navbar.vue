@@ -14,7 +14,7 @@
           <b-nav-item
               @click="
               activeNavItem = 'today'
-              emitLoad('/data/today')
+              emitLoad('/today')
               "
               :class="{ 'nav-active': activeNavItem === 'today' }"
           >
@@ -29,7 +29,7 @@
                 @click="
                 selectedWeek = 'This week'
                 activeNavItem = 'week'
-                emitLoad('/data/week')
+                emitLoad('/week')
                 "
             >
               This week
@@ -40,7 +40,7 @@
                 @click="
                 selectedWeek = week.name
                 activeNavItem = 'week'
-                emitLoad('/data/week/' + index)
+                emitLoad(`/week/${index}?year=${week.year}`)
                 "
                 :key="index"
             >
@@ -58,7 +58,7 @@
                 @click="
                 selectedMonth = month.name
                 activeNavItem = 'month'
-                emitLoad('/data/month/' + (index + 1))
+                emitLoad(`/month/${index + 1}`)
                 "
             >
               {{ month.name }}  <span class="text-muted date-range">{{ month.year }}</span>
@@ -67,7 +67,7 @@
           <b-nav-item
               @click="
               activeNavItem = 'all'
-              emitLoad('/data/all')
+              emitLoad('/all')
               "
               :class="{ 'nav-active': activeNavItem === 'all' }"
           >
@@ -142,25 +142,32 @@
       const today = moment();
       const weeks = [];
       const months = [];
-      const numWeeks = parseInt(today.format('w')) - 1;
       let firstDate = moment(startDate);
+      const numWeeks = today.diff(firstDate, 'weeks');
+      const numMonths = today.diff(firstDate, 'months');
 
       // Adds weeks 0 to the current week to the week nav dropdown
-      for (let i = 0; i <= numWeeks; i++) {
+      for (let i = 0; i <= today.diff(startDate, 'weeks'); i++) {
         const start = firstDate.format('MMM DD');
+        const startYear = firstDate.year();
+
         // The first week has to be treated differently since it starts on Wednesday
         const end = firstDate.add({ days: i === 0 ? 3 : 6 }).format('MMM DD');
+        const endYear = firstDate.year();
+
         weeks.push({
-          name: `Week ${i + 1}`,
-          range: `${start} - ${end}`
+          name: `Week ${(i % 52) + 1}`,
+          range: `${start}, ${startYear} - ${end}, ${endYear}`,
+          year: startYear
         });
+
         firstDate.add({ days: 1 });
       }
 
       firstDate = moment(startDate);
 
       // Adds January to the current month to the month nav dropdown
-      for (let i = 0; i < today.month() + 1; i++) {
+      for (let i = 0; i < numMonths + 1; i++) {
         months.push({
           name: firstDate.format('MMMM'),
           year: firstDate.format('YYYY')
@@ -174,7 +181,7 @@
         selectedWeek: null,
         selectedMonth: null,
         activeNavItem: 'today',
-        options: (() => [
+        options: [
           {
             text: 'Toggle all lines',
             action: () => eventBus.$emit(events.OPTION_CHANGE, { option: events.TOGGLE_VISIBILITY })
@@ -191,7 +198,7 @@
             text: 'Toggle slider',
             action: () => eventBus.$emit(events.OPTION_CHANGE, { option: events.TOGGLE_SLIDER })
           }
-        ])(),
+        ],
         weeks: weeks,
         months: months
       };
@@ -199,13 +206,16 @@
     watch: {
       selectedDate: function (curr, prev) {
         if (curr.slice(0, 10) === prev.slice(0, 10)) {
+          // Makes sure clicking on the same date
+          // doesn't trigger a load
           return;
         }
         const currentDate = moment(curr);
         const month = currentDate.month() + 1;
         const day = currentDate.date();
+        const year = currentDate.year();
 
-        eventBus.$emit(events.LOAD_CHART_DATA, `/data/month/${month}/day/${day}`);
+        eventBus.$emit(events.LOAD_CHART_DATA, `/data/month/${month}/day/${day}?year=${year}`);
       }
     },
     methods: {
