@@ -40,7 +40,7 @@
                 @click="
                 selectedWeek = week.name
                 activeNavItem = 'week'
-                emitLoad(`/week/${index}?year=${week.year}`)
+                emitLoad(`/week/${(index % 52)}?year=${week.year}`)
                 "
                 :key="index"
             >
