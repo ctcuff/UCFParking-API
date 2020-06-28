@@ -2,6 +2,9 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const webpack = require('webpack');
 
 module.exports = {
+  outputDir: 'api/dist',
+  // Relative to outpuDir
+  assetsDir: 'static',
   productionSourceMap: false,
   configureWebpack: {
     plugins: [

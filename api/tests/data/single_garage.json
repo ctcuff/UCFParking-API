@@ -1,0 +1,51 @@
+[
+    {
+        "max_spaces": 1623,
+        "name": "Garage A",
+        "percent_full": 1.23,
+        "spaces_filled": 20,
+        "spaces_left": 1603
+    },
+    {
+        "max_spaces": 1259,
+        "name": "Garage B",
+        "percent_full": 13.5,
+        "spaces_filled": 170,
+        "spaces_left": 1089
+    },
+    {
+        "max_spaces": 1852,
+        "name": "Garage C",
+        "percent_full": 1.08,
+        "spaces_filled": 20,
+        "spaces_left": 1832
+    },
+    {
+        "max_spaces": 1241,
+        "name": "Garage D",
+        "percent_full": 0.08,
+        "spaces_filled": 1,
+        "spaces_left": 1240
+    },
+    {
+        "max_spaces": 1284,
+        "name": "Garage H",
+        "percent_full": 0,
+        "spaces_filled": 0,
+        "spaces_left": 1284
+    },
+    {
+        "max_spaces": 1231,
+        "name": "Garage I",
+        "percent_full": 3.74,
+        "spaces_filled": 46,
+        "spaces_left": 1185
+    },
+    {
+        "max_spaces": 1007,
+        "name": "Garage Libra",
+        "percent_full": 82.13,
+        "spaces_filled": 827,
+        "spaces_left": 180
+    }
+]
