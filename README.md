@@ -20,7 +20,7 @@ date                       |timestamp |day|week |month  |year |garage_data
 2019-01-02T01:00:16.357748 |1546495277|3  |0    |1      |2019 |{"garages": [{"name": "Garage A", "max_spaces": 1623...}
 
 ### Sidenote
-This code in this repo is actually 2 projects merged into one. The api is hosted at [api.ucfgarages.com](https://api.ucfgarages.com) while the website to view that data is hosted at [ucfgarages.com](https://ucfgarages.com). The heroku branch is what's actually pushed to Heroku. You can read more about this [here]()
+This code in this repo is actually 2 projects merged into one. The api is hosted at [api.ucfgarages.com](https://api.ucfgarages.com) while the website to view that data is hosted at [ucfgarages.com](https://ucfgarages.com). The heroku branch is what's actually pushed to Heroku. You can read more about this [here](https://github.com/ctcuff/UCFParking-API/tree/heroku#ucfparking-api)
 
 
 # How do I build this?
