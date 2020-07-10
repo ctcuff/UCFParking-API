@@ -1,10 +1,10 @@
+import os
 import traceback
 import json
-from threading import Thread
 import dropbox
+from threading import Thread
 from dropbox.files import WriteMode
-from flask import Flask, jsonify, request, render_template, send_from_directory, redirect, url_for
-from config import DATABASE_CONFIG, SERVER_CONFIG
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
 from requests import get
@@ -14,12 +14,16 @@ from flask_cors import CORS
 from datetime import datetime
 from urllib.parse import urlparse
 from flask_talisman import Talisman
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
 
 app = Flask(__name__, template_folder='./dist', static_folder='./dist/static')
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-app.debug = True
+app.debug = os.getenv('DEBUG') == 'TRUE'
+
 SCRAPE_URL = 'http://secure.parking.ucf.edu/GarageCount/'
-dbx = dropbox.Dropbox(SERVER_CONFIG['DBOX_TOKEN'])
+SERVER_KEY = os.getenv('SERVER_KEY')
 
 CORS(app)
 
@@ -27,13 +31,7 @@ if not app.debug:
     # Transforms all http requests to https
     Talisman(app, content_security_policy=None)
 
-connect(
-    db=DATABASE_CONFIG['TABLE_NAME'],
-    username=DATABASE_CONFIG['USERNAME'],
-    password=DATABASE_CONFIG['PASSWORD'],
-    host=DATABASE_CONFIG['HOST'],
-    alias='default'
-)
+connect(host=os.getenv('DATABASE_HOST'), alias='default')
 
 
 def jsonify_error(msg, error_code):
@@ -60,9 +58,15 @@ def is_api_request(base_url):
 @app.before_request
 def before_request():
     """
-    If the request comes from ucfgarages and it's a 404, return an
-    HTML response, otherwise, return the JSON response from `error404()`
+    If the request comes from ucfgarages.com and it's a 404, we'll
+    and to the the 404 template. If it comes from api.ucfgarages,
+    we'll show the 404 JSON response from `error404()`
     """
+
+    if app.debug:
+        # This allows 404 errors to show as JSON
+        # instead of HTML while in debug mode
+        return
 
     if not is_api_request(request.base_url):
         # /static isn't actually a valid route but we need to
@@ -157,7 +161,7 @@ def add():
     header_key = request.headers.get('key')
 
     # Make sure normal users can't add data to the database
-    if header_key != SERVER_CONFIG['KEY']:
+    if header_key != SERVER_KEY:
         return jsonify_error('Missing or invalid key', 403)
 
     date = datetime.now()
@@ -327,18 +331,19 @@ def query_database(objects, request_args):
 
 def upload_backup():
     """
-    Saves a backup of all json data to Dropbox
+    Saves a backup of all JSON data to Dropbox
     """
 
     with app.test_request_context():
         # noinspection PyBroadException
         try:
+            dbx = dropbox.Dropbox(os.getenv('DBOX_TOKEN'))
             resp = get_all_data()
             content = json.dumps(resp.json, indent=2)
 
             file = dbx.files_upload(
                 bytes(content, encoding='utf8'),
-                '/ucf-garage-backup/data_backup.json',
+                os.getenv('BACKUP_PATH'),
                 mode=WriteMode.overwrite
             )
 
@@ -346,10 +351,15 @@ def upload_backup():
                 f'[{datetime.now().strftime("%a %B %d %Y %I:%M %p")}] '
                 f'{file.path_display} saved successfully.'
             )
-
         except Exception:
             send_email(f'An error occurred while saving backup data: {traceback.format_exc()}')
 
 
 if __name__ == '__main__':
+    if not SERVER_KEY:
+        raise RuntimeError(
+            'A server key is required. Make sure your environment '
+            'contains a variable named "SERVER_KEY"'
+        )
+
     app.run(threaded=True)

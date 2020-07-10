@@ -1,9 +1,15 @@
 import smtplib
+import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
 from threading import Thread
-from config import EMAIL_CONFIG
+
+FROM = os.getenv('EMAIL_FROM')
+TO = os.getenv('EMAIL_TO')
+HOST = os.getenv('EMAIL_HOST')
+PORT = os.getenv('EMAIL_PORT')
+PASSWORD = os.getenv('EMAIL_PASSWORD')
 
 
 def send_email(body, subject=f'ERROR LOG [{datetime.strftime(datetime.now(), "%b %d, %Y - %I:%M %p")}]'):
@@ -18,19 +24,17 @@ def send_email(body, subject=f'ERROR LOG [{datetime.strftime(datetime.now(), "%b
 
 
 def _send(body, subject):
-    from_ = EMAIL_CONFIG['FROM']
-    to = EMAIL_CONFIG['TO']
-
     msg = MIMEMultipart()
-    msg['From'] = from_
-    msg['To'] = to
+    msg['From'] = FROM
+    msg['To'] = TO
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
-    server = smtplib.SMTP(EMAIL_CONFIG['HOST'], EMAIL_CONFIG['PORT'])
-    server.starttls()
-    server.login(from_, EMAIL_CONFIG['PASSWORD'])
 
-    senders = server.sendmail(from_, to, msg.as_string())
+    server = smtplib.SMTP(host=HOST, port=int(PORT))
+    server.starttls()
+    server.login(FROM, PASSWORD)
+
+    senders = server.sendmail(FROM, TO, msg.as_string())
 
     server.quit()
 
