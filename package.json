@@ -11,7 +11,7 @@
     "db:init": "yarn db:remove && docker run --name db_garages -d -p 27017:27017 mongo:4.2.8",
     "db:remove": "(docker stop db_garages || true) && (docker rm db_garages || true)",
     "db:run": "docker start -ai db_garages",
-    "deploy": "git subtree push --prefix src origin heroku"
+    "deploy": "git subtree push --prefix api origin heroku"
   },
   "dependencies": {
     "axios": "^0.19.0",
