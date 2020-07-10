@@ -44,7 +44,12 @@ class Garage(Document):
     year = IntField(required=True, min_value=2019, max_value=current_year)
     garages = ListField(EmbeddedDocumentField(GarageEntry), required=True)
 
+
     def clean(self):
+        """
+        Called by mongoengine before data is inserted into the db to
+        verify that everything being inserted is valid
+        """
         garages_used = set(_GARAGES)
 
         # Make sure the date passed in is valid

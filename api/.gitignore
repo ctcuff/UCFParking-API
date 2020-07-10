@@ -1,5 +1,4 @@
 .idea
 config.py
 __pycache__
-/dist
 /tests/__pycache__
