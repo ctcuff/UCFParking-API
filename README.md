@@ -1,0 +1,2 @@
+# UCFParking-API
+ This branch is what's deployed on Heroku. How does it work you might ask? Flask serves the contents of the `/dist` directory when the `/` route is visited (basically any route coming from ucfgarages.com). Flask serves JSON to requests coming from api.ucfgarages.com. To deploy this, a subtree is created with `git subtree push --prefix src origin heroku`. That pushes everything in `/api` to this `heroku` branch. To actually deploy this, you can choose the _Connect to GitHub_ method in Heroku's deployment section, then select the `heroku` branch of this repo.
