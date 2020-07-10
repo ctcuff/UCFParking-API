@@ -1,13 +1,16 @@
 {
-  "name": "ucf-parking-web",
-  "description": "Show how full each parking garage at UCF was at every hour of every day",
+  "name": "ucf-parking-api",
+  "description": "An unofficial API for UCF's garage data",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "serve-production": "serve -d dist",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "db:init": "yarn db:remove && docker run --name db_garages -d -p 27017:27017 mongo:4.2.8",
+    "db:remove": "(docker stop db_garages || true) && (docker rm db_garages || true)",
+    "db:run": "docker start -ai db_garages"
   },
   "dependencies": {
     "axios": "^0.19.0",
@@ -45,6 +48,6 @@
     "last 2 versions"
   ],
   "repository": {
-    "url": "https://github.com/ctcuff/UCFParking-Web"
+    "url": "https://github.com/ctcuff/UCFParking-API"
   }
 }
