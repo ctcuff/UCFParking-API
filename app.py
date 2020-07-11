@@ -273,6 +273,11 @@ def robots():
     return send_from_directory('.', 'robots.txt')
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
+
 def query_database(objects, request_args):
     sort_order = {
         'asc': 'timestamp',
