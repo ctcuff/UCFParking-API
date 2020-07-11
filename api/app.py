@@ -71,7 +71,7 @@ def before_request():
     if not is_api_request(request.base_url):
         # /static isn't actually a valid route but we need to
         # allow static so we can load resources from /dist/static
-        valid_routes = {'static', 'index', 'robots'}
+        valid_routes = {'static', 'index', 'robots', 'favicon'}
         if request.endpoint not in valid_routes:
             return render_template('404.html'), 404
 
