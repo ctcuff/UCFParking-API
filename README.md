@@ -1,4 +1,8 @@
 # UCFParking-API
+
+<img width="1648" alt="Screen Shot 2020-06-23 at 3 58 28 AM" src="https://user-images.githubusercontent.com/7400747/87215801-1ce2c600-c308-11ea-9f0e-ba299e261b2d.png">
+<p align="center"><sub>Fun Fact: Since starting this project the garages database his surpassed 13,000 entries 🎉</sub></p>
+
 This is a 2-in-1 project. An unofficial API wrapper for [UCF's parking service](http://secure.parking.ucf.edu/GarageCount/) hosted as a Python app on Heroku, and a website to view a graph of the data. Why did I make this you ask? Instead of making a request to UCF's parking website and scraping the HTML, it now becomes as easy as making a request to [api.ucfgarages.com](https://api.ucfgarages.com) and parsing the json. You can view a graph of the data at [ucfgarages.com](https://ucfgarages.com).
 
 How exactly is this useful you ask? Well, making a request to [api.ucfgarages.com/](https://api.ucfgarages.com/) returns a JSON response with info about each parking garage (spaces taken, percent full, etc). Making a request to the `/all` route returns a JSON response with info about how full each garage was from January to the current date (**BEWARE**, this will return a lot of JSON). The data is updated at the top of every hour every day. To view a specific date, make a request to `/month/:month/day/:day` where `:month` is an int representing the month (1 for January, 2 for February, etc) and `:day` is an int representing the number day of that month. For example, [api.ucfgarages.com/month/1/day/2](https://api.ucfgarages.com/month/1/day/2) returns how full each garage was on January 2nd. Any date in the future will just return an empty JSON array that looks like this:

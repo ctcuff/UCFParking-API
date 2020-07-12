@@ -71,7 +71,7 @@ def before_request():
     if not is_api_request(request.base_url):
         # /static isn't actually a valid route but we need to
         # allow static so we can load resources from /dist/static
-        valid_routes = {'static', 'index', 'robots'}
+        valid_routes = {'static', 'index', 'robots', 'favicon'}
         if request.endpoint not in valid_routes:
             return render_template('404.html'), 404
 
@@ -271,6 +271,11 @@ def error500(err):
 @app.route('/robots.txt')
 def robots():
     return send_from_directory('.', 'robots.txt')
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
 
 
 def query_database(objects, request_args):
