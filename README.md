@@ -77,7 +77,7 @@ BACKUP_PATH=some_file.json
 6. Once everything has been set up, run `app.py`. If it works, the `/api` route should give you a response that looks like [this](https://api.ucfgarages.com/) and the `/` route should show the graph!
 7. Pat yourself on the back for following instructions, maybe have a cookie too 🍪.
 
-**Side note:** Your local database won't have anything in it when you set it up. The data you see on the frontend is pulled from api.ucfgarages.com. To add data to the local db, run `curl --header "key: random_super_secure_key"`. You can verify the data was added by visiting the `/today` route on localhost. If you want to rerun container without resetting it, run `yarn db:run`.
+**Side note:** Your local database won't have anything in it when you set it up. The data you see on the frontend is pulled from api.ucfgarages.com. To add data to the local db, run `curl --header "key: random_super_secure_key" http://localhost:500/add`. You can verify the data was added by visiting the `/today` route on localhost. If you want to rerun container without resetting it, run `yarn db:run`.
 
 **Pro Tip:** To view the db in your terminal run `docker exec -it db_garages bash`. This creates a new bash session inside the container. To enter the Mongo shell, run `mongo`. From there, you can run `help` to view an available list of commands.
 
