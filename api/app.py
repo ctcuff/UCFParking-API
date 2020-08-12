@@ -268,6 +268,29 @@ def error500(err):
     return jsonify_error('Internal server error', 500)
 
 
+@app.errorhandler(503)
+def error503(err):
+    # This error shows up as H12 on Heroku:
+    # https://devcenter.heroku.com/articles/error-codes#h12-request-timeout
+    send_email(
+        f"Service unavailable. This could be a problem with Heroku or UCF's site"
+        f'Check {SCRAPE_URL} to see if the connection is stable. '
+        f'Check Heroku logs for more details.'
+        f'\n\n{traceback.format_exc()}'
+    )
+    return jsonify_error('Service unavailable', 503)
+
+
+@app.errorhandler(504)
+def error504(err):
+    send_email(
+        f"Gateway timeout. This could be a problem with Heroku or UCF's site"
+        f'Check {SCRAPE_URL} to see if the connection is stable. '
+        f'\n\n{traceback.format_exc()}'
+    )
+    return jsonify_error('Gateway timeout', 504)
+
+
 @app.route('/robots.txt')
 def robots():
     return send_from_directory('.', 'robots.txt')
