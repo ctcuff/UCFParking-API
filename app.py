@@ -7,7 +7,7 @@ from dropbox.files import WriteMode
 from flask import Flask, jsonify, request, render_template, send_from_directory
 from models import Garage, GarageEntry
 from bs4 import BeautifulSoup
-from requests import get
+from requests import get, exceptions
 from email_helper import send_email
 from mongoengine import connect
 from flask_cors import CORS
@@ -88,7 +88,15 @@ def index():
 def api():
     # This route is needed since navigating to api.ucfgarages.com
     # really just routes to ucf-garages.herokuapp.com/api
-    page = get(SCRAPE_URL)
+    try:
+        page = get(SCRAPE_URL, timeout=15)
+    except exceptions.Timeout as e:
+        send_email(
+            f'A timeout occurred while requesting.'
+            f'Check {SCRAPE_URL}, the site may be unavailable.\n\n{str(e)}'
+        )
+        return jsonify_error('Request timeout', 408)
+
     valid_garages = {
         'garage a', 'garage b', 'garage c', 'garage d', 'garage h', 'garage i', 'garage libra'
     }
