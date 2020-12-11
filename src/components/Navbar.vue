@@ -58,7 +58,7 @@
                 @click="
                 selectedMonth = month.name
                 activeNavItem = 'month'
-                emitLoad(`/month/${(index + 1) % 12}?year=${month.year}`)
+                emitLoad(`/month/${(index % 12) + 1}?year=${month.year}`)
                 "
             >
               {{ month.name }}  <span class="text-muted date-range">{{ month.year }}</span>
