@@ -174,6 +174,10 @@ def add():
 
     date = datetime.now()
     garage_data = api().json
+    current_hour = datetime.now().hour
+    last_entry = datetime.fromtimestamp(
+        Garage.objects.order_by('-timestamp').first().timestamp
+    )
 
     if 'error' in garage_data:
         send_email(
@@ -181,6 +185,10 @@ def add():
             "Check to see if UCF's parking site is up."
         )
         return jsonify_error('No data available to add.', 500)
+
+    if last_entry.hour == current_hour:
+        send_email(f'Could not add data, an entry already exists for hour {current_hour}')
+        return jsonify_error('An entry with this hour already exists.', 403)
 
     # noinspection PyTypeChecker
     garage = Garage(
