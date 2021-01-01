@@ -34,14 +34,13 @@ class GarageEntry(EmbeddedDocument):
 class Garage(Document):
     # Specifies the cluster name
     meta = {'collection': 'ucf_garages'}
-    current_year = datetime.now().year
 
     date = StringField(required=True, unique=True)
     timestamp = LongField(required=True, unique=True)
     day = IntField(required=True, min_value=1, max_value=31)
     week = IntField(required=True, min_value=0, max_value=52)
     month = IntField(required=True, min_value=1, max_value=12)
-    year = IntField(required=True, min_value=2019, max_value=current_year)
+    year = IntField(required=True, min_value=2019)
     garages = ListField(EmbeddedDocumentField(GarageEntry), required=True)
 
 
