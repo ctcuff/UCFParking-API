@@ -46,7 +46,7 @@ This code in this repo is actually 2 projects merged into one. The api is hosted
 3. Create a Gmail app password for whatever email you'd like to use to get error notifications. [See here](https://support.google.com/accounts/answer/185833?hl=en). If you don't want email logs, just remove any occurrence of `send_email()` in `app.py`, get rid of `email_helper.py`, and ignore the email configuration in `.env`.
 4. Head to [Dropbox's site](https://www.dropbox.com/developers/documentation/python#tutorial) to create a Python app and take note of the token. This will be used for saving a backup. If you don't want to do this, just delete occurrences of `upload_backup()` in `app.py` and remove `DBOX_TOKEN` and `BACKUP_PATH` in `.env`.
 5. In the root directory create a file named `.env` that looks like this:
-```bash
+```ini
 # This is for development purposes. When set to true, 404 errors
 # will return JSON responses and http requests will not be
 # redirected to https
