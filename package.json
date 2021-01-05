@@ -14,7 +14,7 @@
     "deploy": "git subtree push --prefix api origin heroku"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "bootstrap-vue": "^2.0.0-rc.27",
     "core-js": "^2.6.5",
     "echarts": "^4.2.1",
