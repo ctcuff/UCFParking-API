@@ -1,7 +1,7 @@
 beautifulsoup4==4.8.0
 dropbox==9.3.0
 Flask==1.0.2
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 flask-talisman==0.7.0
 gunicorn==19.8.1
 mongoengine==0.18.2
