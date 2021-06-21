@@ -153,14 +153,6 @@ def api():
             'percent_full': percent_full,
         })
 
-    # 7 garages won't be returned if the user only
-    # queries for specific garages
-    if not queried_garages and len(garage_data['garages']) != 7:
-        send_email(
-            f'Invalid data length. '
-            f'Check {SCRAPE_URL} to see if the website has changed or is no longer running.'
-        )
-
     return jsonify(garage_data)
 
 
