@@ -19,7 +19,7 @@
     "core-js": "^2.6.5",
     "echarts": "^4.2.1",
     "luxon": "^1.17.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "vue": "^2.6.10",
     "vue-datetime": "^1.0.0-beta.10",
     "vue-echarts": "^4.0.3",
